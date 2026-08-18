@@ -1,0 +1,1230 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  <entry>
+    <title>Orbit-v0.2更新报告</title>
+    <url>/2026/08/15/Orbit-v0-2%E6%9B%B4%E6%96%B0%E6%8A%A5%E5%91%8A/</url>
+    <content><![CDATA[<h1>Orbit v0.2 更新报告</h1>
+<blockquote>
+<p><strong>版本定位：</strong> 从两个独立的悬浮组件成品，升级为拥有统一入口、统一管理面板和统一交互语言的多 Widget 浏览器 Runtime。</p>
+</blockquote>
+<h2 id="发布范围">发布范围</h2>
+<p>本报告以 <code>v0.1.1</code> 发布提交与后续冻结的 <code>v0.2-baseline</code> 为比较边界。仓库没有独立的 <code>v0.2.0</code> Git tag；变更记录将该系列标记为 <code>0.2.0-c</code>，而 <code>v0.2-baseline</code> 用作 v0.3 开发前的冻结快照。因此，本文以 <strong>v0.2 系列能力</strong> 而非某个单一 tag 作为汇报对象。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>v0.1.x</th>
+<th>v0.2 系列</th>
+<th>对用户的意义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>交付形态</td>
+<td>Music、Clock 可独立接入</td>
+<td>新增 <code>dist/orbit.js</code> 多组件入口</td>
+<td>页面只需选择一种集成方式即可获得统一管理</td>
+</tr>
+<tr>
+<td>组件管理</td>
+<td>无统一面板</td>
+<td>Launcher + <code>Orbit.mount/setVisible/list</code></td>
+<td>用户能集中显示或隐藏组件</td>
+</tr>
+<tr>
+<td>桌面操作</td>
+<td>单个组件的既有交互</td>
+<td>默认 <code>Alt+O</code> 打开管理面板</td>
+<td>可快速进入统一控制入口</td>
+</tr>
+<tr>
+<td>移动操作</td>
+<td>组件自身触控</td>
+<td>长按悬浮球打开 Launcher</td>
+<td>适配没有键盘的触控设备</td>
+</tr>
+<tr>
+<td>文档叙述</td>
+<td>FWF 预览与组件并列</td>
+<td>统一为 Orbit Runtime</td>
+<td>产品模型更清晰</td>
+</tr>
+</tbody>
+</table>
+<h2 id="主要更新">主要更新</h2>
+<h3 id="1-新增-orbit-runtime-与多-widget-发布物">1. 新增 Orbit Runtime 与多 Widget 发布物</h3>
+<p>v0.2 的决定性更新是新增 <code>src/core/Orbit.js</code>、<code>src/core/Launcher.js</code>、<code>src/entry-orbit.js</code> 以及浏览器产物 <code>dist/orbit.js</code>。原先的 Music 与 Clock 不再只作为孤立脚本存在，而可由 Runtime 注册、启动并在 Launcher 中展示。</p>
+<p>对静态站用户而言，推荐接入从“分别引用两个脚本”转变为：引入 Music 与 Clock 的 CSS、写入 <code>window.ORBIT</code> 配置，再引入一个 <code>orbit.js</code>。这降低了多组件接入成本，也为后续增加 Widget 留出了公共入口。</p>
+<h3 id="2-launcher：解决多组件可管理性">2. Launcher：解决多组件可管理性</h3>
+<p>Launcher 为桌面提供 <code>Alt+O</code> 快捷键，为移动端提供“长按球体”入口，并加入首次提示与桌面/移动端差异化脚注。其价值不在于弹出层外观，而在于解决了多组件出现后“谁负责统一管理”的产品问题。</p>
+<p>v0.2 同时补上了两项关键交互修复：一是 Music 的 <code>display:block !important</code> 场景仍可被隐藏；二是移动端长按松手顺序调整为先识别长按、再结束拖拽，从而避免长按被误判为普通点击。这些修复使 Launcher 的基本操作能在真实页面中成立。</p>
+<h3 id="3-交互与布局向共享语言收敛">3. 交互与布局向共享语言收敛</h3>
+<p>新增/调整的 Gesture、Layout、Music CSS 与 Clock Host，使左右吸附、展开方向和移动端卡片边界保持更一致。v0.2 的核心成果并非把所有业务逻辑彻底抽象，而是建立了一个跨 Widget 复用的交互起点：<strong>拖拽、吸附、展开、长按、管理入口</strong> 使用同一组规则。</p>
+<h2 id="验证与发布状态">验证与发布状态</h2>
+<p>v0.2 交付了 demo、<code>test-orbit.html</code>、浏览器 IIFE 产物和 API/配置文档；差异范围约为 40 个文件、11,790 行新增、934 行删除。它实现了多组件 Runtime 的主体能力，但该阶段尚无 v0.3 引入的单元测试、产物校验脚本和 GitHub Actions CI。因此，其质量信号主要来自文档化的阶段验收和手动浏览器测试，而非自动化门禁。</p>
+<h2 id="兼容性与使用影响">兼容性与使用影响</h2>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>已使用 Music/Clock 单文件</td>
+<td>可继续使用独立包；不要与 <code>orbit.js</code> 同时引入</td>
+</tr>
+<tr>
+<td>新接入多组件页面</td>
+<td>使用 <code>dist/orbit.js</code>，并保留两份组件 CSS</td>
+</tr>
+<tr>
+<td>桌面用户</td>
+<td>默认使用 <code>Alt+O</code>，可通过 <code>ORBIT.launcherKey</code> 改写</td>
+</tr>
+<tr>
+<td>移动用户</td>
+<td>长按任意球体打开 Launcher；保持手势区域不被页面脚本抢占</td>
+</tr>
+</tbody>
+</table>
+<h2 id="风险与下一步">风险与下一步</h2>
+<p>v0.2 的限制主要是 Runtime 仍以“注册 Host + 直接操作 DOM”为主，隐藏、销毁、重挂载的语义没有充分分离；当 PJAX、动态卸载或多个 portal 出现时，资源生命周期容易变得模糊。Music 与 Clock 的复杂度也存在明显差距，未来不宜一次性大改二者。</p>
+<p>因此，最合理的下一步正是 v0.3 所采取的方向：先用 Clock 试点建立生命周期契约，再让 Music 接入 <code>destroy</code>、可见性目标和 portal 所有权，而不是在 v0.2 阶段继续堆叠视觉功能。</p>
+]]></content>
+      <categories>
+        <category>开发</category>
+        <category>更新</category>
+      </categories>
+      <tags>
+        <tag>开发</tag>
+        <tag>编程</tag>
+        <tag>更新</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Orbit 通向 v1.0 的长期方案：从 Runtime 代码到兼容性网络</title>
+    <url>/2026/08/16/2026-08-16-Orbit-%E9%80%9A%E5%90%91-v1.0-%E7%9A%84%E9%95%BF%E6%9C%9F%E6%96%B9%E6%A1%88%EF%BC%9A%E4%BB%8E-Runtime-%E4%BB%A3%E7%A0%81%E5%88%B0%E5%85%BC%E5%AE%B9%E6%80%A7%E7%BD%91%E7%BB%9C/</url>
+    <content><![CDATA[<h1>Orbit 通向 v1.0 的长期方案：从 Runtime 代码到兼容性网络</h1>
+<p><strong>规划主题：</strong> <code>Orbit 1.0 — Stable Floating Interaction Platform</code><br>
+<strong>起点：</strong> v0.4 的 Runtime Hardening 与 Contract Alpha<br>
+<strong>规划日期：</strong> 2026-08-16</p>
+<h2 id="一-长期目标：v1-0-不是-大版本-而是-可被依赖的承诺">一、长期目标：v1.0 不是“大版本”，而是“可被依赖的承诺”</h2>
+<p>Orbit 的长期价值不能建立在 Music、Clock 或未来某一个 Widget 的功能稀缺性上。单个悬浮工具会被替代，单套拖拽与 Dock 代码也会被复刻。Orbit 真正可能形成不可替代性的路径，是让站点主题、Widget 作者与用户都开始依赖同一种<strong>悬浮交互兼容性</strong>。</p>
+<p>因此，v1.0 不应理解为“功能足够多”或“文档足够完整”，而应理解为：<strong>Orbit 已经能稳定地承诺一个跨主题、跨 Widget、跨版本的 Runtime Contract，并有真实的独立采用者证明该 Contract 值得依赖。</strong></p>
+<blockquote>
+<p><strong>Orbit 1.0 的产品不是一批官方悬浮组件，而是一种让任何静态站功能获得一致空间、手势、生命周期、可访问性与用户偏好能力的开放运行时。</strong></p>
+</blockquote>
+<p>这一表述并不意味着 Orbit 要做成大型平台或云服务。相反，Orbit 的竞争力应来自轻量、可复制、可自托管、无框架与 local-first；这些特征与现有静态站定位一致。<a href="https://github.com/ykpgp0928/Orbit/blob/main/README.md" title="Orbit README">1</a> <a href="https://github.com/ykpgp0928/Orbit/blob/main/docs/DEVELOPMENT.md" title="Orbit 开发与第三方 Widget 约定">2</a> 但“轻量”不能等于“只是一份好代码”。v1.0 必须让外部作者不用理解内部实现，也愿意把自己的 Widget 面向 Orbit 构建。</p>
+<h2 id="二-不可替代性的正确模型">二、不可替代性的正确模型</h2>
+<p>Orbit 不应该试图通过封闭数据、专有账户或功能堆叠制造替代成本。那既偏离静态站与开源工具的气质，也会使产品与成熟 SaaS 正面竞争。更适合 Orbit 的模式是：<strong>开放协议 + 兼容实现 + 可移植用户连续性 + 生态验证</strong>。</p>
+<table>
+<thead>
+<tr>
+<th>不可替代性来源</th>
+<th>它解决的问题</th>
+<th>Orbit 中的具体体现</th>
+<th>不应误解为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>稳定 Contract</td>
+<td>Widget 作者无需为每个主题重写横切交互。</td>
+<td>一次面向 Orbit 的实现，获得挂载、拖拽、停靠、显隐、销毁、Launcher、Profile。</td>
+<td>一个内部 <code>registerHost</code> 函数。</td>
+</tr>
+<tr>
+<td>主题兼容性</td>
+<td>站点维护者无需逐一手工协调 Widget。</td>
+<td>主题只接入 Runtime 与 Manifest，多个 Widget 可统一运行。</td>
+<td>官方只提供一个 Demo 主题。</td>
+</tr>
+<tr>
+<td>用户连续性</td>
+<td>用户的位置、可见性、偏好不因 Widget 更新而丢失。</td>
+<td>local-first Profile、导入/导出、schema 迁移。</td>
+<td>把用户数据锁在私有服务。</td>
+</tr>
+<tr>
+<td>互操作网络</td>
+<td>替换 Runtime 会破坏已有 Widget/主题兼容性。</td>
+<td>独立 Widget、主题与工具都采用同一 Contract。</td>
+<td>GitHub Star 或官方 Widget 数量。</td>
+</tr>
+<tr>
+<td>可信治理</td>
+<td>使用者敢于在自己的站点上长期依赖。</td>
+<td>SemVer、兼容矩阵、弃用策略、安全边界与透明发布。</td>
+<td>一次性发布 1.0 标签。</td>
+</tr>
+</tbody>
+</table>
+<p>要注意：开源协议不会让 Orbit 的源码不可复制，但会让“重建所有兼容性、文档、测试、示例、用户 Profile 迁移与社区习惯”变得没有意义。真正的护城河不是锁定，而是<strong>被采用后形成的协调成本</strong>。如果到 1.0 前没有独立采用者，Orbit 仍可以是优秀库，但不应自称为平台。</p>
+<h2 id="三-v1-0-的产品边界">三、v1.0 的产品边界</h2>
+<p>Orbit 需要坚定地做一个页面级微交互 Runtime，而不是逐步吞噬静态站的内容层、账号层、编辑层或 AI 层。边界越清楚，Contract 越稳定，第三方才越容易相信其长期方向。</p>
+<table>
+<thead>
+<tr>
+<th>Orbit 1.0 负责</th>
+<th>Orbit 1.0 不负责</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Widget 的挂载、生命周期、显隐、位置、停靠、空间协调和恢复。</td>
+<td>内容管理、文章编辑、站内搜索、评论、推荐系统。</td>
+</tr>
+<tr>
+<td>Pointer/keyboard/reduced-motion 等跨 Widget 交互约定。</td>
+<td>Widget 的业务逻辑、业务数据模型和后端服务。</td>
+</tr>
+<tr>
+<td>Launcher、可访问性基线、Profile 导入导出与错误隔离。</td>
+<td>用户账号、强制云同步、广告、追踪与市场交易。</td>
+</tr>
+<tr>
+<td>Widget/主题/Manifest 的兼容性与版本协商。</td>
+<td>规定所有 Widget 必须使用同一视觉语言。</td>
+</tr>
+<tr>
+<td>对静态 HTML、Hexo 等低构建依赖环境的友好接入。</td>
+<td>成为 React/Vue/Next 等框架的通用应用平台。</td>
+</tr>
+</tbody>
+</table>
+<p>这意味着，Reader、Music、Clock、站点状态等任何后续功能都只能是<strong>对 Contract 的证明</strong>，而不能倒逼 Core 为某一个业务做硬编码。当前 Runtime 已经开始避免在 Core 中写死业务 DOM id，这一原则应在 1.0 中成为硬性规则。<a href="https://github.com/ykpgp0928/Orbit/blob/main/src/core/Orbit.js" title="Orbit Runtime">3</a></p>
+<h2 id="四-通向-1-0-的阶段路线">四、通向 1.0 的阶段路线</h2>
+<p>版本号不是日历承诺。每个阶段只有在前一阶段的证据充分时才进入下一阶段。建议将路线分成 v0.4、v0.5、v0.6、v0.7–0.9、v1.0 RC 与 v1.0 六个阶段；若证据不足，应延长验证，不要用功能清单替代成熟度。</p>
+<table>
+<thead>
+<tr>
+<th>阶段</th>
+<th>核心目的</th>
+<th>对外状态</th>
+<th>进入下一阶段的证据</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>v0.4</strong></td>
+<td>加固生命周期，发布 Contract Alpha 与 Profile Alpha。</td>
+<td>实验性、仅建议试用。</td>
+<td>三个异质 Widget 跑通同一 Contract；Music/Clock 重挂载无资源泄漏。</td>
+</tr>
+<tr>
+<td><strong>v0.5</strong></td>
+<td>把 Alpha 用于真实主题与外部作者试验。</td>
+<td>Public Beta。</td>
+<td>至少 2 个非核心维护的 Widget 或主题接入；发现并修复 Contract 缺口。</td>
+</tr>
+<tr>
+<td><strong>v0.6</strong></td>
+<td>收敛 Contract，定义 Manifest 与兼容性工具。</td>
+<td>Candidate API。</td>
+<td>Contract 变更明显下降；Widget 可由独立仓库发布与安装。</td>
+</tr>
+<tr>
+<td><strong>v0.7–0.9</strong></td>
+<td>兼容性、迁移、性能、安全和治理打磨。</td>
+<td>Release Candidate 预备期。</td>
+<td>至少一个完整升级周期无破坏性事故；跨浏览器/主题矩阵稳定。</td>
+</tr>
+<tr>
+<td><strong>v1.0 RC</strong></td>
+<td>API freeze、生态回归与迁移演练。</td>
+<td>除 P0/P1 问题外不再改 Contract。</td>
+<td>独立采用者确认升级无阻；安全与可访问性门禁通过。</td>
+</tr>
+<tr>
+<td><strong>v1.0</strong></td>
+<td>发布稳定承诺与兼容政策。</td>
+<td>Stable。</td>
+<td>满足所有 1.0 发布门槛，而非仅完成开发任务。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="4-1-v0-4：证明-contract-可以存在">4.1 v0.4：证明“Contract 可以存在”</h3>
+<p>v0.4 负责清理地基：Music 的资源回收、Clock 的 Contract 迁移、Reference Widget、Profile Alpha、DOM 集成测试与统一 CI。它不试图解决生态问题，只解决“Orbit 自己是否有资格要求别人依赖它”。具体方案见《Orbit v0.4 方案》。</p>
+<h3 id="4-2-v0-5：证明-外部人可以使用-contract">4.2 v0.5：证明“外部人可以使用 Contract”</h3>
+<p>v0.5 的主任务不是增加官方 Widget，而是引入外部视角。至少选择两个与核心仓库不同的维护边界：一个 Widget 作者、一个主题维护者；最好两者都不参与 Runtime 内部开发。应让他们按公开文档完成接入，然后将他们遇到的阻碍记录为 Contract Issue，而不是由核心作者用私有知识绕过。</p>
+<p>v0.5 可以提供以下最小分发形态：一个 Runtime 包、一个 Widget manifest、一个独立 Widget 包，以及一个主题适配示例。对静态站用户仍应保留复制 <code>dist/</code> 的零构建接入；包管理器是可选便利层，不可成为唯一路径。</p>
+<p><strong>v0.5 的成功问题：</strong> 一个来自独立仓库的 Widget 能否不复制 <code>Gesture</code>、<code>Snap</code>、<code>Launcher</code>、位置持久化或 DOM 清理代码，在两个不同主题中工作？如果答案是否定的，不应进入 API freeze。</p>
+<h3 id="4-3-v0-6：从-api-集合-成为-互操作协议">4.3 v0.6：从“API 集合”成为“互操作协议”</h3>
+<p>v0.6 应冻结 Manifest 的基本形态，并建立兼容性协商。Runtime 与 Widget 不应只靠“能 import 就运行”，而应明确说明所要求的 Contract 版本、能力、样式资产和可选权限。Manifest 必须足够小，避免重演复杂前端插件平台的包管理问题。</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;id&quot;</span><span class="punctuation">:</span> <span class="string">&quot;org.example.status&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;name&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Example Status&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;orbit&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span> <span class="attr">&quot;contract&quot;</span><span class="punctuation">:</span> <span class="string">&quot;^0.6.0&quot;</span> <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;entry&quot;</span><span class="punctuation">:</span> <span class="string">&quot;./dist/widget.js&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;styles&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;./dist/widget.css&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;capabilities&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;drag&quot;</span><span class="punctuation">,</span> <span class="string">&quot;dock&quot;</span><span class="punctuation">,</span> <span class="string">&quot;profile&quot;</span><span class="punctuation">,</span> <span class="string">&quot;portal&quot;</span><span class="punctuation">]</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;permissions&quot;</span><span class="punctuation">:</span> <span class="punctuation">[</span><span class="string">&quot;local-profile&quot;</span><span class="punctuation">]</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>v0.6 规范组成</th>
+<th>目的</th>
+<th>稳定性要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>Widget Manifest</code></td>
+<td>声明 entry、样式、Contract 版本、能力与权限。</td>
+<td>进入 Candidate，字段采用可扩展/可忽略策略。</td>
+</tr>
+<tr>
+<td><code>WidgetDefinition</code></td>
+<td>定义 mount/destroy/visibility/metadata。</td>
+<td>以生命周期语义为核心，避免业务字段膨胀。</td>
+</tr>
+<tr>
+<td><code>Runtime Service API</code></td>
+<td>提供 layout、gesture、profile、portal、a11y。</td>
+<td>错误、取消、资源所有权要有明确语义。</td>
+</tr>
+<tr>
+<td><code>Profile Schema</code></td>
+<td>允许用户导入导出和 Widget 状态隔离。</td>
+<td>提供 schema version 与 migration hook。</td>
+</tr>
+<tr>
+<td><code>Theme Adapter</code></td>
+<td>约束主题如何加载 Runtime、Manifest、样式。</td>
+<td>保持静态文件接入，不假设框架或后端。</td>
+</tr>
+<tr>
+<td><code>Compatibility Report</code></td>
+<td>在构建/运行前说明可否组合。</td>
+<td>对不兼容版本给出可理解错误，而非静默失败。</td>
+</tr>
+</tbody>
+</table>
+<p>此阶段还应发布一个小型开发工具，例如 <code>orbit validate</code> 或纯浏览器诊断面板，用于验证 Manifest、识别重复 id、缺失样式、未释放 portal 和 Contract 不匹配。工具的价值不在“更炫”，而在于让第三方接入成本可见、可诊断。</p>
+<h3 id="4-4-v0-7-0-9：证明-生态可以安全地演进">4.4 v0.7–0.9：证明“生态可以安全地演进”</h3>
+<p>v0.7–0.9 的工作重点是耐久性，不是扩张速度。需要完成三类验证：一是兼容性，二是性能与可访问性，三是治理与升级。</p>
+<p>兼容性方面，应至少维护两个主题/部署形态、三个独立业务形态的 Widget，并让其中至少一个 Widget 经过一次非破坏性升级。性能方面，要在移动端验证多个 Widget 并存、低端设备拖拽、长列表/portal 和 reduced-motion；现有项目对 rAF 合并、backdrop-filter 与几何正确性已有意识，但应从文档原则走向可复现的基准和回归门禁。<a href="https://github.com/ykpgp0928/Orbit/blob/main/docs/PERFORMANCE.md" title="Orbit 性能说明">4</a></p>
+<p>治理方面，需要建立公开的变更流程：Alpha 可以快速变化；Beta 需要迁移指南；Candidate 仅修复；Stable 采用 SemVer、支持窗口与弃用周期。所有 breaking change 必须同时提供旧 Contract adapter 或明确的 codemod/迁移指南。v1.0 不应让早期 Widget 作者在一次小版本升级后被迫重写。</p>
+<h2 id="五-1-0-的技术架构标准">五、1.0 的技术架构标准</h2>
+<p>v1.0 不要求最复杂的实现，但要求每一种副作用都有清楚所有者、每一种跨 Widget 交互都有清楚仲裁者、每一个扩展点都有错误边界。</p>
+<h3 id="5-1-core-的稳定职责">5.1 Core 的稳定职责</h3>
+<table>
+<thead>
+<tr>
+<th>Core 子系统</th>
+<th>1.0 承诺</th>
+<th>典型失败时的行为</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Registry</td>
+<td>校验 id、版本与 capability；维护实例目录。</td>
+<td>拒绝冲突定义，并向诊断面板报告。</td>
+</tr>
+<tr>
+<td>Lifecycle</td>
+<td>统一清理 listener、timer、rAF、observer、media 等副作用。</td>
+<td>一个 cleanup 出错不阻断其他清理，错误以 <code>widgetError</code> 事件报告。</td>
+</tr>
+<tr>
+<td>Visibility</td>
+<td>区分 hide 与 destroy，维护 <code>aria-hidden</code> 与 portal 可见性。</td>
+<td>无 Root 时不无限重试；销毁状态不得被意外复活。</td>
+</tr>
+<tr>
+<td>Space Coordinator</td>
+<td>处理位置、碰撞策略、停靠和 viewport 变化。</td>
+<td>根据 capability 降级，不强迫所有 Widget 可拖拽。</td>
+</tr>
+<tr>
+<td>Gesture Router</td>
+<td>拥有 pointer session 与快捷键冲突策略。</td>
+<td>冲突时遵循优先级并保证 cancel 可达。</td>
+</tr>
+<tr>
+<td>Launcher</td>
+<td>从 Metadata 渲染 Widget 列表，并保持键盘与焦点可访问。</td>
+<td>单个 Widget 元数据损坏不得导致 Launcher 崩溃。</td>
+</tr>
+<tr>
+<td>Profile Store</td>
+<td>命名空间状态、schema 升级、导入/导出。</td>
+<td>忽略不认识/损坏的条目，不丢弃其他 Widget 状态。</td>
+</tr>
+<tr>
+<td>Diagnostics</td>
+<td>汇总版本、实例、泄漏提示、兼容性状态。</td>
+<td>默认只读，不影响生产体验。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-2-widget-的稳定权利与责任">5.2 Widget 的稳定权利与责任</h3>
+<p>Widget 作者有权要求 Runtime 提供声明过的服务；也有责任遵守资源、DOM、状态与安全边界。这个对称关系应写入 1.0 Contract，而不是分散在示例注释中。</p>
+<table>
+<thead>
+<tr>
+<th>Widget 权利</th>
+<th>Widget 责任</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>获取隔离的 Profile 命名空间和可移植状态。</td>
+<td>不读取、修改其他 Widget 的 Profile。</td>
+</tr>
+<tr>
+<td>请求受控 portal 以渲染 body 级 UI。</td>
+<td>通过 Runtime 声明 portal，销毁时不留下节点或全局监听。</td>
+</tr>
+<tr>
+<td>使用统一 gesture/layout 服务。</td>
+<td>不自行注册与 Runtime 冲突的全局 pointer 流。</td>
+</tr>
+<tr>
+<td>在 Launcher 展示 label、图标与可见性。</td>
+<td>元数据必须安全文本化；不得依赖 Core 的内置 id。</td>
+</tr>
+<tr>
+<td>通过事件与其他 Widget 协作。</td>
+<td>只使用版本化、文档化事件；不得直接调用其他 Host 私有 API。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="5-3-安全与隐私底线">5.3 安全与隐私底线</h3>
+<p>Orbit 的开放扩展会引入比第一方 Widget 更大的输入边界。1.0 应禁止 Core 直接把外部 Widget 的 id、label 或元数据写进 <code>innerHTML</code>；应采取 DOM API、文本转义和 URL 协议校验。Widget 样式隔离在 1.0 可以先通过命名空间约定和文档实现，不必急于引入 Shadow DOM；但必须避免默认全局 selector 破坏主题。</p>
+<p>Profile 默认仅保存在用户浏览器。任何未来同步能力必须是可选、显式同意、可导出和可删除的独立服务，不能成为 Runtime 的隐式网络行为。对于像 Music 一样依赖外部 API 的 Widget，Manifest 至少应声明网络能力，并在文档中给出 CSP、<code>connect-src</code> 与 <code>media-src</code> 说明。<a href="https://github.com/ykpgp0928/Orbit/blob/main/docs/CONFIG.md" title="Orbit 配置说明">5</a></p>
+<h2 id="六-生态策略：先验证-被采用-再追求-规模">六、生态策略：先验证“被采用”，再追求“规模”</h2>
+<p>Orbit 最需要的不是大量官方组件，而是少量可信的独立采用。第一批生态不应追求市场，而应追求异质性与可复现性。</p>
+<table>
+<thead>
+<tr>
+<th>参与者</th>
+<th>他们为什么会采用 Orbit</th>
+<th>Orbit 必须提供的交换价值</th>
+<th>首批验证方式</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>静态站主题作者</td>
+<td>不想为每个插件维护拖拽、移动端、z-index、可访问性。</td>
+<td>一个稳定的 Theme Adapter 与统一入口。</td>
+<td>在两个不同风格主题中加载同一 Widget。</td>
+</tr>
+<tr>
+<td>Widget 作者</td>
+<td>不想重复做生命周期、空间与管理面板。</td>
+<td>Contract、Services、样板、诊断和版本兼容。</td>
+<td>独立仓库发布一个非核心 Widget。</td>
+</tr>
+<tr>
+<td>站点维护者</td>
+<td>想组合工具而不让页面变乱。</td>
+<td>Launcher、冲突管理、Profile 与可复制配置。</td>
+<td>从 manifest 安装/移除多个 Widget。</td>
+</tr>
+<tr>
+<td>终端用户</td>
+<td>想保留自己的位置、可见性和微交互偏好。</td>
+<td>local-first、低打扰、可恢复、可迁移。</td>
+<td>导出 Profile 后在另一兼容站点/主题导入。</td>
+</tr>
+</tbody>
+</table>
+<p>首批 Widget 的选择应围绕 Contract 的压力测试，而非热度。建议至少包含：一个带媒体/异步状态的 Widget（Music）、一个极轻量周期更新 Widget（Clock）、一个含 portal 或列表的 Widget，以及一个由外部作者实现的、与上述业务无关的 Widget。这样才能验证 Runtime 是否真的通用。</p>
+<p>同样，主题适配需要两个不同约束：例如一个传统 Hexo 主题和一个纯静态 HTML/Cloudflare Pages 部署。若 Orbit 只能在自己的 Demo 样式和 DOM 结构中顺利运行，它就还不是通用 Runtime。</p>
+<h2 id="七-版本与治理政策">七、版本与治理政策</h2>
+<p>v1.0 的可依赖性不只取决于代码，还取决于使用者能否预测变化。应在 1.0 前公布以下政策，并实际执行至少一个 Beta → RC 的升级周期。</p>
+<table>
+<thead>
+<tr>
+<th>政策</th>
+<th>1.0 承诺</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>语义化版本</td>
+<td>Core Contract 的破坏性变化只出现在 Major；新增可选能力进入 Minor。</td>
+</tr>
+<tr>
+<td>Contract 生命周期</td>
+<td><code>experimental</code> → <code>beta</code> → <code>stable</code> 三阶段；每项能力均标记稳定性。</td>
+</tr>
+<tr>
+<td>弃用期</td>
+<td>Stable API 在至少一个 Minor 版本内给出 warning、文档迁移和可用替代。</td>
+</tr>
+<tr>
+<td>兼容窗口</td>
+<td>Runtime 明确支持哪些 Widget Contract 范围；不兼容必须可诊断。</td>
+</tr>
+<tr>
+<td>安全修复</td>
+<td>P0/P1 漏洞或资源泄漏优先 patch；公开说明影响范围与修复版本。</td>
+</tr>
+<tr>
+<td>变更治理</td>
+<td>影响 Contract 的 Proposal 必须有动机、替代方案、迁移和测试计划。</td>
+</tr>
+<tr>
+<td>生态沟通</td>
+<td>Changelog 区分 Runtime、Contract、Widget、Theme Adapter 与文档变化。</td>
+</tr>
+</tbody>
+</table>
+<p>MIT 许可与开放开发仍然可以保持。真正需要治理的不是贡献权限，而是 Contract 的稳定性：不要让每个为 Music 手感而做的内部变化，意外成为所有第三方 Widget 的破坏性变化。</p>
+<h2 id="八-衡量进展的指标">八、衡量进展的指标</h2>
+<p>Orbit 不应以“新增组件数”作为长期北极星。它要证明的，是部署者、Widget 作者和用户对同一 Runtime 的依赖正在增强。建议同时观察领先指标与结果指标。</p>
+<table>
+<thead>
+<tr>
+<th>类别</th>
+<th>指标</th>
+<th>为什么重要</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Contract 可用性</td>
+<td>从空模板到首个 Widget 可运行的步骤数与失败点。</td>
+<td>衡量第三方接入摩擦，而不是核心作者熟练度。</td>
+</tr>
+<tr>
+<td>复用深度</td>
+<td>Widget 业务代码中未重复实现的 Runtime 横切能力数量。</td>
+<td>验证 Contract 是否真正节省了拖拽、显隐、清理等样板。</td>
+</tr>
+<tr>
+<td>生命周期可靠性</td>
+<td>多次 destroy/remount 后监听、DOM、portal、media 的残留数。</td>
+<td>这是第三方敢否依赖 Runtime 的基础。</td>
+</tr>
+<tr>
+<td>生态独立性</td>
+<td>非核心维护者的 Widget/主题数量及持续兼容版本数。</td>
+<td>区分官方示例与真实采用。</td>
+</tr>
+<tr>
+<td>用户连续性</td>
+<td>Profile 导出/导入成功率、schema 迁移成功率。</td>
+<td>证明 Orbit 开始承载可移植偏好，而非单页装饰。</td>
+</tr>
+<tr>
+<td>升级信任</td>
+<td>Minor 升级中无迁移失败的第三方 Widget 比例。</td>
+<td>证明治理与兼容政策可执行。</td>
+</tr>
+<tr>
+<td>体验质量</td>
+<td>交互冲突、可访问性缺陷、移动端回归的 issue 数。</td>
+<td>防止生态扩张破坏 Orbit 的低打扰哲学。</td>
+</tr>
+</tbody>
+</table>
+<p>这些指标不一定全部公开，但它们应服务于一个判断：<strong>是否有人在没有核心作者介入的前提下，成功安装、开发、升级并维护 Orbit Widget。</strong></p>
+<h2 id="九-v1-0-的-go-no-go-门槛">九、v1.0 的 Go / No-Go 门槛</h2>
+<p>v1.0 最重要的纪律，是宁可继续发布 0.x，也不要用版本号掩盖未经验证的稳定性。以下门槛应作为发布清单而非愿景。</p>
+<h3 id="go：可以发布-v1-0-的条件">Go：可以发布 v1.0 的条件</h3>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>必须满足的条件</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>生命周期</td>
+<td>所有参考 Widget 都通过自动化 mount/hide/destroy/remount/portal 清理测试；无已知 P0/P1 泄漏。</td>
+</tr>
+<tr>
+<td>Contract</td>
+<td><code>WidgetDefinition</code>、Runtime Services、Manifest、Profile Schema 已至少经过一个完整 Beta 升级周期。</td>
+</tr>
+<tr>
+<td>外部采用</td>
+<td>至少 2 个非核心维护的 Widget/主题组合，在不同主题或部署形态中持续可用。</td>
+</tr>
+<tr>
+<td>兼容性</td>
+<td>有公开兼容矩阵、诊断工具与一次成功的无破坏升级案例。</td>
+</tr>
+<tr>
+<td>文档</td>
+<td>新 Widget 作者可只凭公开文档完成接入；所有链接、示例、npm 包文件和迁移指南通过自动校验。</td>
+</tr>
+<tr>
+<td>可访问性</td>
+<td>Launcher、键盘操作、焦点恢复、reduced motion 和高对比基本场景有自动/人工回归。</td>
+</tr>
+<tr>
+<td>安全与隐私</td>
+<td>动态元数据安全渲染；Profile local-first；网络能力与 CSP 边界文档化。</td>
+</tr>
+<tr>
+<td>治理</td>
+<td>SemVer、弃用、支持窗口与变更 Proposal 流程已发布并试运行。</td>
+</tr>
+</tbody>
+</table>
+<h3 id="no-go：应继续停留在-0-x-的信号">No-Go：应继续停留在 0.x 的信号</h3>
+<p>若 Contract 仍频繁因第一方 Widget 的临时需求而改变；若 Music/Clock 之外的 Widget 需要复制内部私有模块；若第三方主题接入需要核心作者手工调试；若 destroy/remount 仍可能残留监听；或若唯一采用者仍是 Orbit 自己的 Demo，那么 v1.0 都尚未到来。此时继续发布 0.6、0.7 或 0.9 是负责任的做法，而不是失败。</p>
+<h2 id="十-结论：让-orbit-值得被替代之前先值得被依赖">十、结论：让 Orbit 值得被替代之前先值得被依赖</h2>
+<p>Orbit 的目标不应该是让任何人“无法替代”它的代码；开源世界中那既不现实也不必要。更值得追求的状态是：Widget 作者、主题维护者和用户都发现，离开 Orbit 会失去一组已经验证过的兼容性、连续性与交互质量，于是<strong>没有足够理由去替换它</strong>。</p>
+<p>这条路径从 v0.4 的生命周期和 Contract Alpha 开始，但不在 v0.4 结束。v0.5 需要外部人使用，v0.6 需要协议收敛，v0.7–0.9 需要在真实升级中证明耐久，v1.0 才能对稳定性作出承诺。届时 Music、Clock 与其他 Widget 仍然重要，但它们的重要性不在“本身不可替代”，而在于它们共同证明：Orbit 已经成为静态站悬浮交互的可靠兼容层。</p>
+<h2 id="参考资料">参考资料</h2>
+]]></content>
+      <categories>
+        <category>开发</category>
+        <category>规划</category>
+      </categories>
+      <tags>
+        <tag>开发</tag>
+        <tag>编程</tag>
+        <tag>规划</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Orbit-v0.3更新报告</title>
+    <url>/2026/08/15/Orbit-v0-3%E6%9B%B4%E6%96%B0%E6%8A%A5%E5%91%8A/</url>
+    <content><![CDATA[<h1>Orbit v0.3 更新报告</h1>
+<blockquote>
+<p><strong>版本定位：</strong> 在 v0.2 的多 Widget Runtime 之上，补齐实例生命周期、显式销毁、可访问性恢复入口和最低自动化门禁，为将来的稳定 API 打基础。</p>
+</blockquote>
+<h2 id="发布范围">发布范围</h2>
+<p>v0.3.0 已以标签 <code>v0.3.0</code> 和 GitHub Release 发布，指向提交 <code>e61e983</code>；npm 包 <code>floating-widget-framework</code> 的 <code>latest</code> 也为 <code>0.3.0</code>。</p>
+<p>相对 <code>v0.2-baseline</code>，此次变更涉及 46 个文件，约新增 4,500 行、删除 416 行。改动覆盖 Runtime、Clock/Music Host、Launcher、构建校验、CI、性能说明、阶段设计记录与发行产物。</p>
+<h2 id="主要更新">主要更新</h2>
+<h3 id="1-生命周期成为正式契约">1. 生命周期成为正式契约</h3>
+<p>v0.3 引入 <code>LifecycleScope</code>，将事件、计时器、DOM、观察器等副作用登记为逆序、幂等、异常隔离的 cleanup 队列。Runtime 同时明确了两个不同操作：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>语义</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>setVisible(id, false)</code></td>
+<td>隐藏，不释放已创建实例和资源</td>
+<td>用户在 Launcher 中暂时关闭组件</td>
+</tr>
+<tr>
+<td><code>destroy(id)</code></td>
+<td>显式清理资源并移除实例</td>
+<td>页面卸载、重建、PJAX 或业务主动销毁</td>
+</tr>
+</tbody>
+</table>
+<p><code>Orbit.mount()</code> 也改为幂等：新的 <code>widgets</code> 配置只更新列出的组件，不会因某个 id 被省略而销毁已经挂载的实例。这避免了增量配置场景下的意外拆除。[4]</p>
+<h3 id="2-host-adapter-与-clock-试点">2. Host adapter 与 Clock 试点</h3>
+<p>Runtime 通过 Host adapter 获得 <code>start</code>、<code>getRoot</code>、<code>destroy</code> 和 <code>getVisibilityTargets</code>，核心层不再写死 Music/Clock 的业务 DOM。Clock 作为试点已覆盖事件解绑、计时器销毁、rAF 拖拽队列取消、DOM 删除和 destroy 后重新 mount；这是本次更新最可信的工程验证。[5]</p>
+<p>Clock 的拖拽更新经 <code>requestAnimationFrame</code> 合并，展开方向交由共享 <code>ExpandPolicy</code> 判断，也将高频视觉更新与可测试几何决策分开。</p>
+<h3 id="3-music-接入新边界">3. Music 接入新边界</h3>
+<p>Music Host 增加了模板集中创建、状态 class 的单一投影、<code>data-orbit-portal</code> 所有权、AudioEngine/MutationObserver/PJAX 监听清理以及显式 <code>destroyMusicPlayer()</code>。特别是 dock-list portal 只删除被本实例声明拥有的节点，降低了对页面其他内容的误伤风险。[6]</p>
+<h3 id="4-launcher-的可访问性和移动端恢复">4. Launcher 的可访问性和移动端恢复</h3>
+<p>Launcher 现在会在打开时聚焦标题或第一个控件、在关闭时恢复触发点焦点，并处理 Tab 循环与 Escape 关闭。若粗指针设备上全部 Widget 被隐藏，<code>launcherFallback: 'ghost'</code> 会显示一个独立、不可拖拽且不入列表的恢复按钮，避免用户失去重新打开管理器的路径。</p>
+<h2 id="验证与质量信号">验证与质量信号</h2>
+<p>本版本新增 LifecycleScope、WidgetRegistry、ExpandPolicy 的单元测试。实际执行结果如下：</p>
+<table>
+<thead>
+<tr>
+<th>校验项</th>
+<th>实测结果</th>
+<th>覆盖范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>npm run build</code></td>
+<td>通过</td>
+<td>三个浏览器 IIFE 产物生成</td>
+</tr>
+<tr>
+<td><code>npm run test:unit</code></td>
+<td>14 项通过</td>
+<td>生命周期、注册契约、展开几何</td>
+</tr>
+<tr>
+<td><code>npm run test:normalize</code></td>
+<td>12 项 smoke 检查通过</td>
+<td>状态归一化规则</td>
+</tr>
+<tr>
+<td><code>npm run check:dist</code></td>
+<td>通过</td>
+<td>发行文件存在性与体积检查</td>
+</tr>
+<tr>
+<td><code>npm run ci</code></td>
+<td>通过</td>
+<td>build、unit、dist 校验</td>
+</tr>
+<tr>
+<td>GitHub Actions</td>
+<td>v0.3 发布提交成功</td>
+<td>Node 20 环境下的基础门禁</td>
+</tr>
+</tbody>
+</table>
+<p>构建后工作树保持干净，且 <code>dist/</code> 与 <code>site/dist/</code> 的三个 JS 产物 SHA-256 一致，说明源码、npm 分发物和站点演示分发物在本次发布时没有漂移。</p>
+<h2 id="兼容性与使用影响">兼容性与使用影响</h2>
+<p>v0.3 仍支持 v0.2 的 <code>registerHost</code> 方式，并保留单 Widget 与多 Widget IIFE 交付形态。使用者需要理解的新行为是：<strong>隐藏不等于销毁</strong>；若页面框架会卸载或重建宿主环境，应调用 <code>Orbit.destroy(id)</code>，而不是仅从 <code>ORBIT.widgets</code> 配置中移除它。</p>
+<h2 id="已知限制与建议">已知限制与建议</h2>
+<ol>
+<li>
+<p><strong>Music Host 仍过于集中。</strong> 其约 1,566 行，仍混合歌单、音频、DOM、布局、手势、持久化和 PJAX。下一阶段宜拆分 Playlist、Audio、Template/Portal 和 Interaction 边界。</p>
+</li>
+<li>
+<p><strong>CI 少跑了一层。</strong> 工作流执行 <code>test:unit</code>，但未调用完整的 <code>npm test</code>，因此当前没有自动跑 <code>test:normalize</code>。应将 CI 改为完整测试命令，并补充浏览器级的 <code>destroy → remount</code>、portal 清理和移动端长按回归。</p>
+</li>
+<li>
+<p><strong>迁移文档需补齐。</strong> Release 说明指向 <code>docs/MIGRATION-v0.3.md</code>，但标签中不存在该文件。应提供实际迁移指南，解释 destroy/visible 的语义变化。</p>
+</li>
+<li>
+<p><strong>包入口需更明确。</strong> <code>main</code> 当前指向会自启动的浏览器 IIFE；如果要支持 npm import，应增加 ESM/CJS 入口，否则需在文档中明确其浏览器脚本定位。</p>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>开发</category>
+        <category>更新</category>
+      </categories>
+      <tags>
+        <tag>开发</tag>
+        <tag>编程</tag>
+        <tag>更新</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>对周围事的看法</title>
+    <url>/2026/05/16/%E4%B8%80%E4%BA%9B%E5%B0%8F%E7%9A%84%E7%9C%8B%E6%B3%95/</url>
+    <content><![CDATA[<h2 id="理论：自律的逆天性">理论：自律的逆天性</h2>
+<p>此理论并非指你在这方面不可能自律，而是说一个人如果一方面自律，则它几乎是必然的要去在另一方面不自律，因为他心中的情绪，欲望需要发泄，除非说是他在自律之中可以发泄，但这很难</p>
+<h2 id="现状及原因">现状及原因</h2>
+<h3 id="现状">现状</h3>
+<p>事实上，我一直感觉我与周围的人格格不入，周围的人的人品、道德规范、思想、思考方式与内容都显得不像是一个正常的学生，正常的人的行为。周围的人也是满口脏话，黄话，真的不知道到底是在想什么。</p>
+<p>风气越来越差，尤其是低龄的孩子也开始了用脏话，疾病，用他人的痛苦来逞口舌之快，来填补自己内心的空缺，排解自己的情绪。而手机逐渐走向低龄化，这与现状有很大关系</p>
+<p>这个社会的道德水平也在不断下降，暴力行为逐渐增多</p>
+<p>在生活中，我会看到我们周围的人在捉弄，在欺负一些生理有缺陷的人</p>
+<h3 id="原因">原因</h3>
+<p>对于网络与手机，我们需要在玩耍中间找到平衡点，因为网络的确是鱼龙混杂，甚至现在的网络几乎被低质，恶俗，冷漠，不良价值观所占据，周围的人满口脏话，黄话，与网络，与人的欲望是有很大关系的，根据自律的逆天性，我们需要有一个出口发来发泄，而现在的人难以找到发泄的渠道，只得向外通过辱骂，低质的内容来产生廉价的快乐，无法向内求所。</p>
+<p>而风气越来越差，低龄的孩子用脏话，疾病，用他人的痛苦来骂人的原因，我思来想去，最终觉得还是离不开欲望与网络，网络使社会的联系速度加快，但同时也让不良的价值观，精神，道德与说话方式快速传播，而欲望则允许人们在一个词被平台禁用之后又继续需源源不断地使用更加隐晦，更加令人难以想象的词语来骂人，他们会为了口舌之快，挖空心思地去寻找更为生僻的，承载着他人痛苦的词语去骂人，他们不会想到人们的痛苦，只会发泄自己情绪，于是便形成了恶性循环，而小孩的善恶观念有几乎为零，他们便会学区这些词语来骂人，最终社会的风气也逐渐变坏，在这个过程中，孩子事实上是受害者。</p>
+<p>现在的校园问题还有一个原因，就是权力分配不合理，或者说权威。正常而言应该是由老师去管教约束学生，但现在老师的能力——或者说权力变小（因为盲目的关注孩子的感受），学生权力变大（家长的撑腰，维护，胡搅蛮缠），这边导致了老师管不住学生，风气日益下降的原因</p>
+<p>其实客观来说，这是必然的，根据热力学第二定律，一个封闭系统中的物体终将从有序趋向于无序，我们只能通过外部的力量来矫正内部，但是我们与外部又共同属于一个更高维度的封闭系统，所以趋于无序是必然的。（好像有一些牵强）</p>
+<p>每当我看到有人被欺凌时，我就感到十分的痛心，我理解了欺凌者渴望的权力与高贵，更同情被欺凌者的无辜。欺凌者所渴望的本质其实还是欲望，他们渴望优越感，期望通过打压，欺凌他人的方式来突显出自身的高大，这种情感是我所理解却不提倡的</p>
+<p>在我心中，这个社会是从小孩开始烂的，我之前也提到了善恶观念弱等等等等，但同时，还有一个现实的问题，他们会长大，然后接替这个社会的治理，我简直是无法想象社会将变成怎样（也可能是我太悲观）</p>
+<h2 id="见解">见解</h2>
+<p>在我的心目中，真正高大的人从不会是张扬者，他们往往会使不起眼的那个，但是他们的高大正是体现在他们的和，他们的怜，他们的勇与他们的义，他们不会急于去表现自己，而是会默默的发展，去培养自己的花</p>
+<p>但是我们并不该因为社会的不断变坏而放弃改变，我们应该去尽自己的努力，尽量的延缓，减慢这个转变的速度</p>
+<h2 id="一些题外话">一些题外话</h2>
+<p>有一个说法，是人的一切行为都是为了利益，但是我认为不对，我认为是每个人的行为都可以从为了利益的角度来解读</p>
+<p>我有的时候在思考，什么时候才能达到人人平等，最终我得出的结论是，当总统（主席）像我们平常的工作，比如推销啊，教师啊之类的，所受到的待遇，尊敬（主要指对待的态度）一样时，我们的社会才可能平等</p>
+<p>我最喜欢的文言文是逍遥游，滕王阁序，阿房宫赋，琵琶行，这几首我都背过了，说来也怪，这些都是我的课外积累，但是在没有资料的情况下读的时候却可以理解她的意思，哪怕一句里有几个字无法准确翻译，但是我却能抓住它的神，理解他的情</p>
+<p>而我最喜欢的词人，则是李煜和晏几道，我在诗词的海洋，在古人的故事中沉醉，那种美，那种感觉是语言无法表达的，就像翻译古文，翻译出来往往却失了神，最典型的就是“大漠孤烟直，长河落日圆”虽用字质朴，却让人读完自然出现一幅边塞黄昏图</p>
+<p>我其实读的书也与现在的人格格不入，我读《小王子》《长安的荔枝》《乡土中国》，东野圭吾的《白夜行》《恶意》《嫌疑人X的献身》《解忧杂货店》，《白鹿原》《活着》《明朝那些事》，《寂静的春天》《王阳明全解》和《论语》及论语的解析，译注</p>
+<h2 id="写在最后">写在最后</h2>
+<p><s>这不过是一个初二生从小学到初中的胡思乱想的不完全集合罢了</s></p>
+]]></content>
+      <categories>
+        <category>杂谈</category>
+      </categories>
+      <tags>
+        <tag>见解与看法</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Orbit v0.4 方案：从高质量实现到可依赖的悬浮交互 Runtime</title>
+    <url>/2026/08/17/2026-08-18-Orbit-v0.4-%E6%96%B9%E6%A1%88%EF%BC%9A%E4%BB%8E%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%88%B0%E5%8F%AF%E4%BE%9D%E8%B5%96%E7%9A%84%E6%82%AC%E6%B5%AE%E4%BA%A4%E4%BA%92-Runtime/</url>
+    <content><![CDATA[<h1>Orbit v0.4 方案：从高质量实现到可依赖的悬浮交互 Runtime</h1>
+<p><strong>版本定位：</strong> <code>v0.4.0 — Runtime Hardening &amp; Contract Alpha</code><br>
+<strong>方案日期：</strong> 2026-08-16<br>
+<strong>适用基线：</strong> Orbit v0.3.0 / Runtime <code>0.3.0-phase5</code></p>
+<h2 id="一-版本命题">一、版本命题</h2>
+<p>Orbit v0.4 不应被定义为“增加几个新的悬浮组件”，也不应把 Music、Clock 或任何未来 Widget 当作产品本体。其唯一版本命题应当是：<strong>使 Orbit 成为第三方功能可以安全依赖的、面向静态站的悬浮交互 Runtime。</strong></p>
+<p>v0.3 已经证明了 Orbit 在第一方组件上的交互能力：Runtime 区分隐藏与显式销毁；Launcher 协调多 Widget 的显隐；Clock 已具备可销毁、可重挂载路径；共享手势、磁吸、停靠与展开方向模块也已形成雏形。<a href="https://github.com/ykpgp0928/Orbit/blob/main/README.md" title="Orbit README">1</a> <a href="https://github.com/ykpgp0928/Orbit/blob/main/src/core/Orbit.js" title="Orbit Runtime">2</a> 但这些能力目前主要由第一方 Host 直接消费，且 Music 的生命周期资源未完全收束，因此仍不足以支撑“第三方 Widget 可依赖的架构”这一承诺。<a href="https://github.com/ykpgp0928/Orbit/blob/main/src/host/music-player-host.js" title="Music Host">3</a> <a href="https://github.com/ykpgp0928/Orbit/blob/main/src/host/clock-host.js" title="Clock Host">4</a></p>
+<blockquote>
+<p><strong>v0.4 的完成不是“新增功能已经演示”，而是“外部开发者可以用稳定、可测试、低样板的契约，把一个新 Widget 接入另一个采用 Orbit 的静态站主题”。</strong></p>
+</blockquote>
+<h2 id="二-必须解决的产品问题">二、必须解决的产品问题</h2>
+<p>Orbit 当前的风险不是功能少，而是其价值还停留在“作者实现得比较好”。使用者可以替换 Music/Clock，开发者也能复刻拖拽、贴边和 localStorage，因此代码质量本身不会形成不可替代性。v0.4 要开始构建的不是锁定用户的数据壁垒，而是<strong>兼容性资产</strong>：稳定的 Widget Contract、统一的 Runtime Services、可移植用户 Profile，以及至少一个由非核心 Host 视角完成的接入证明。</p>
+<table>
+<thead>
+<tr>
+<th>当前状态</th>
+<th>为什么仍可替代</th>
+<th>v0.4 要改变什么</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Music 与 Clock 是首批内置 Host</td>
+<td>用户可只取 UI 成果，而不采用 Orbit。</td>
+<td>把 Host 私有能力抽成所有 Widget 可用的 Runtime Services。</td>
+</tr>
+<tr>
+<td><code>registerHost</code> 是实际生产路径</td>
+<td>扩展能力仍是内部适配器约定。</td>
+<td>推出可文档化、可测试的 <code>Orbit Widget Contract Alpha</code>。</td>
+</tr>
+<tr>
+<td><code>registerWidget</code>/Registry 与实际挂载未闭环</td>
+<td>架构概念尚未成为真正插件路径。</td>
+<td>让 Contract 定义可注册、可挂载、可显隐、可销毁。</td>
+</tr>
+<tr>
+<td>用户状态只分散在各 Host 的 localStorage</td>
+<td>不存在跨 Host、跨主题的连续性。</td>
+<td>定义本地优先、可导入导出的 <code>Orbit Profile</code> 格式。</td>
+</tr>
+<tr>
+<td>生命周期在 Clock 与 Music 上不一致</td>
+<td>第三方作者无法信赖 destroy/remount。</td>
+<td>将资源所有权和清理作为发布阻断条件。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="三-v0-4-的边界：做什么与不做什么">三、v0.4 的边界：做什么与不做什么</h2>
+<p>v0.4 必须克制。它的目标是建立“可用的架构地基”，而不是把 Orbit 变成 Widget 商城、页面助手、云同步产品或通用前端框架。以下边界是避免版本失焦的必要条件。</p>
+<table>
+<thead>
+<tr>
+<th>v0.4 必做</th>
+<th>v0.4 不做</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>完整加固 Music 与 Clock 的 mount/destroy/remount 生命周期。</td>
+<td>不引入账户体系、云同步、付费服务或中心化 Widget 市场。</td>
+</tr>
+<tr>
+<td>发布 Widget Contract Alpha 和 Runtime Services。</td>
+<td>不冻结一个尚未被真实使用验证的 1.0 协议。</td>
+</tr>
+<tr>
+<td>建立本地 <code>Orbit Profile</code> 导入/导出格式。</td>
+<td>不把用户行为数据上传到任何服务端。</td>
+</tr>
+<tr>
+<td>用 3 个异质 Widget 证明 Contract 的可复用性。</td>
+<td>不追求大量官方 Widget 或主题皮肤。</td>
+</tr>
+<tr>
+<td>补齐浏览器级集成测试、CI、文档和示例主题。</td>
+<td>不在这一版重写全部 CSS 或更换构建体系。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="四-目标架构">四、目标架构</h2>
+<p>v0.4 应保留“无框架、静态文件直接引入”的原则。运行时仍可由一个浏览器 bundle 交付，但内部需要从“Runtime 认识 Host”走向“Host 按 Contract 使用 Runtime Services”。这样既不牺牲 Hexo 的易接入性，也能让未来不同功能以一致方式获得生命周期、布局、手势与可访问性能力。</p>
+<figure class="highlight text"><table><tr><td class="code"><pre><span class="line">静态站主题 / 页面</span><br><span class="line">        │</span><br><span class="line">        ▼</span><br><span class="line">  Orbit Runtime Core</span><br><span class="line">  ├─ Widget Registry &amp; Contract Loader</span><br><span class="line">  ├─ Lifecycle / Visibility / Portal Ownership</span><br><span class="line">  ├─ Space &amp; Layout Coordinator</span><br><span class="line">  ├─ Gesture / Drag / Snap / Dock Services</span><br><span class="line">  ├─ Launcher &amp; Accessibility Services</span><br><span class="line">  └─ Profile Store (local-first)</span><br><span class="line">        │</span><br><span class="line">        ├───────────────┬────────────────┬─────────────────┐</span><br><span class="line">        ▼               ▼                ▼                 ▼</span><br><span class="line"> Music Host          Clock Host       Reference Host A   Reference Host B</span><br><span class="line"> 第一方适配          第一方适配          独立功能形态        独立功能形态</span><br></pre></td></tr></table></figure>
+<h3 id="4-1-orbitwidgetdefinition：contract-alpha">4.1 <code>OrbitWidgetDefinition</code>：Contract Alpha</h3>
+<p>Contract Alpha 的目标不是创造过度抽象，而是替代目前仅供内部使用的 <code>registerHost</code> 适配器。它应将第三方作者真正需要的边界讲清楚：Widget 如何声明身份、如何接收 Runtime 服务、怎样报告 Root/portal、怎样响应显隐，以及何时释放一切资源。</p>
+<figure class="highlight js"><table><tr><td class="code"><pre><span class="line"><span class="title class_">Orbit</span>.<span class="title function_">register</span>(&#123;</span><br><span class="line">  <span class="attr">id</span>: <span class="string">&quot;example-status&quot;</span>,</span><br><span class="line">  <span class="attr">version</span>: <span class="string">&quot;0.4&quot;</span>,</span><br><span class="line">  <span class="attr">label</span>: <span class="string">&quot;Example Status&quot;</span>,</span><br><span class="line">  <span class="attr">capabilities</span>: &#123;</span><br><span class="line">    <span class="attr">draggable</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="attr">dockable</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="attr">launcher</span>: <span class="literal">true</span>,</span><br><span class="line">    <span class="attr">profile</span>: <span class="literal">true</span></span><br><span class="line">  &#125;,</span><br><span class="line">  <span class="title function_">mount</span>(<span class="params">ctx</span>) &#123;</span><br><span class="line">    <span class="comment">// ctx.lifecycle, ctx.visibility, ctx.layout, ctx.gesture,</span></span><br><span class="line">    <span class="comment">// ctx.profile, ctx.portal, ctx.events, ctx.a11y</span></span><br><span class="line">    <span class="comment">// 返回 WidgetInstance</span></span><br><span class="line">  &#125;</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<table>
+<thead>
+<tr>
+<th>Contract 部分</th>
+<th>责任</th>
+<th>v0.4 的最低要求</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>id / version / label</code></td>
+<td>稳定标识与用户可见名称。</td>
+<td>id 必须命名空间化或经合法性校验；Label 不得未经转义进入 HTML。</td>
+</tr>
+<tr>
+<td><code>capabilities</code></td>
+<td>声明希望使用的 Runtime 能力。</td>
+<td>先支持 <code>draggable</code>、<code>dockable</code>、<code>launcher</code>、<code>profile</code>；未知字段必须安全忽略。</td>
+</tr>
+<tr>
+<td><code>mount(ctx)</code></td>
+<td>创建业务 DOM 并请求服务。</td>
+<td>必须返回 WidgetInstance 或抛出可捕获错误；不得把业务 id 写进 Core。</td>
+</tr>
+<tr>
+<td><code>WidgetInstance</code></td>
+<td>由 Runtime 管理的实例边界。</td>
+<td>必须有 <code>root</code>、<code>setVisible(bool)</code>、<code>destroy()</code>；可选 <code>portals()</code>、<code>snapshot()</code>。</td>
+</tr>
+<tr>
+<td><code>ctx.lifecycle</code></td>
+<td>所有副作用的唯一归属。</td>
+<td>监听、observer、timer、rAF、媒体实例都必须可登记和逆序释放。</td>
+</tr>
+<tr>
+<td><code>ctx.profile</code></td>
+<td>按 Widget id 隔离的持久化服务。</td>
+<td>数据必须 JSON 可序列化；无 DOM、无全局键名污染。</td>
+</tr>
+<tr>
+<td><code>ctx.portal</code></td>
+<td>body 级 sheet/menu 的所有权与显隐。</td>
+<td>Runtime 能在 hide/destroy 时处理受声明的 portal。</td>
+</tr>
+</tbody>
+</table>
+<p>Contract Alpha 应明确标记为“<code>0.4 experimental</code>”，允许 0.5 发生一次可控的破坏性调整；但其核心生命周期语义不应含糊。<strong>隐藏不销毁，销毁必释放，遗漏配置不等于销毁</strong>是 v0.3 已建立、应被保留的语义。<a href="https://github.com/ykpgp0928/Orbit/blob/main/src/core/Orbit.js" title="Orbit Runtime">2</a></p>
+<h3 id="4-2-runtime-services-的设计原则">4.2 Runtime Services 的设计原则</h3>
+<p>Runtime Services 的任务是消除每个新 Widget 必须重新解决的横切问题，而不是接管 Widget 的业务状态。Music 的歌单、Clock 的时间格式、未来组件的业务数据都属于 Host；空间坐标、可见性、手势、portal 所有权、生命周期、Profile 和 Launcher 才属于 Orbit。</p>
+<table>
+<thead>
+<tr>
+<th>Service</th>
+<th>应提供的能力</th>
+<th>不应承担的能力</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>lifecycle</code></td>
+<td>监听、timer、rAF、observer、async cancel 的注册和幂等清理。</td>
+<td>Widget 的业务流程或全局单例状态。</td>
+</tr>
+<tr>
+<td><code>layout</code></td>
+<td>位置读写、边界 clamp、展开意图、停靠侧、视口变化。</td>
+<td>具体 Widget 卡片的 DOM/CSS。</td>
+</tr>
+<tr>
+<td><code>gesture</code></td>
+<td>短按、长按、拖拽、取消与指针会话。</td>
+<td>“短按播放”或“长按打开某业务菜单”的业务决定。</td>
+</tr>
+<tr>
+<td><code>visibility</code></td>
+<td>显隐过渡和 <code>aria-hidden</code> 协调。</td>
+<td>销毁后偷偷保留业务资源。</td>
+</tr>
+<tr>
+<td><code>profile</code></td>
+<td>分 Widget 命名空间的本地状态、导入/导出。</td>
+<td>账户、云端同步和行为追踪。</td>
+</tr>
+<tr>
+<td><code>a11y</code></td>
+<td>Launcher 聚焦、键盘关闭、reduced motion 约定。</td>
+<td>强制每个 Widget 使用同一视觉风格。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="五-v0-4-工作流与里程碑">五、v0.4 工作流与里程碑</h2>
+<h3 id="milestone-0：基线冻结与版本契约-1-个短迭代">Milestone 0：基线冻结与版本契约（1 个短迭代）</h3>
+<p>此阶段不新增用户可见功能。首先固定 v0.3 的回归矩阵，明确 Music、Clock、Launcher、ghost fallback 和动态页面恢复的当前行为。将版本号建立为单一来源，并让 package、Runtime、Demo 与文档从同一变量读取，消除目前 0.3.0、Phase 4、Phase 5 并存的口径。<a href="https://github.com/ykpgp0928/Orbit/blob/main/README.md" title="Orbit README">1</a> <a href="https://github.com/ykpgp0928/Orbit/blob/main/src/core/Orbit.js" title="Orbit Runtime">2</a> <a href="https://github.com/ykpgp0928/Orbit/blob/main/package.json" title="构建与测试脚本">5</a></p>
+<p><strong>验收条件：</strong> README 不含死链；文档版本、Runtime <code>version</code> 和 Demo 文案一致；CI 中执行的测试集合与本地 <code>npm test</code> 完全一致；构建后 <code>git diff --exit-code</code> 为零。</p>
+<h3 id="milestone-1：lifecycle-hardening-v0-4-的发布阻断项">Milestone 1：Lifecycle Hardening（v0.4 的发布阻断项）</h3>
+<p>首先修复 Music Host。所有 document/window 监听、<code>setTimeout</code>、<code>requestAnimationFrame</code>、MutationObserver、PJAX listener 和音频事件都必须使用具名 handler 或通过 LifecycleScope 注册。<code>destroy()</code> 不得只移除 DOM，而必须终止副作用、取消异步恢复路径并清除对旧 root 的引用。当前 Music Host 在 bind 阶段创建多个匿名全局 listener，而 destroy 路径没有对应清理；此项是 Contract Alpha 之前的必要修复。<a href="https://github.com/ykpgp0928/Orbit/blob/main/src/host/music-player-host.js" title="Music Host">3</a></p>
+<p><strong>验收条件：</strong> 对 Music 与 Clock 分别执行 <code>mount → destroy → mount</code> 三次；每轮后监听计数不增加；单次 pointer/click 只产生一次业务反应；不存在 detached root 引用；音频 element 和自有 portal 都被释放。应在真实 DOM 测试环境中自动验证，而不是只依赖人工 Demo。</p>
+<h3 id="milestone-2：contract-alpha-的-步行骨架">Milestone 2：Contract Alpha 的“步行骨架”</h3>
+<p>不要直接迁移全部 Music 逻辑。先用一个极小 <code>Reference Badge</code> 或 <code>Status</code> Widget 走通完整链路：<code>register → mount → profile read/write → drag/dock → Launcher visible toggle → portal → destroy → remount</code>。该 Widget 不追求产品价值，只用于证明 Contract 在作者不知道内部 Host 实现的条件下仍成立。</p>
+<p><strong>验收条件：</strong> 示例 Widget 的业务代码不直接操作 <code>window</code> 级全局监听、不复制 Drag/Snap/Dock 算法、不写 Orbit 私有 CSS class；其接入指南能由独立开发者在一个空静态页面中完成。</p>
+<h3 id="milestone-3：迁移两个第一方-host-并建立第三种异质-host">Milestone 3：迁移两个第一方 Host，并建立第三种异质 Host</h3>
+<p>Clock 是优先迁移对象：业务简单、生命周期已有基础、可作为 Contract 的参考实现。Music 第二个迁移，但不要求一次拆完全部 UI；重点是将其资源管理、Root/portal、位置持久化和手势接入 Runtime Services。第三种 Host 应选择与 Music/Clock 不同的业务形态，例如文档状态、站点公告或可折叠的页面工具。它不是“杀手功能”，而是验证 Contract 不绑定音频和时间的架构样本。</p>
+<p><strong>验收条件：</strong> 三个 Widget 均使用同一套 register/mount/destroy/visibility/Profile API；任意一个被隐藏或销毁不会破坏另两个；Launcher 只依赖 Contract 元数据而非硬编码 <code>music/clock</code> 标签。</p>
+<h3 id="milestone-4：profile-alpha-与可移植性">Milestone 4：Profile Alpha 与可移植性</h3>
+<p>Profile 是 Orbit 开始产生用户连续性的最小形式，但 v0.4 只做本地优先与导入导出，绝不做云服务。Profile 需要记录 Runtime 级偏好（组件排序、可见性、布局）和每个 Widget 的隔离状态，附带 schema version、生成时间和可选站点 scope。</p>
+<figure class="highlight json"><table><tr><td class="code"><pre><span class="line"><span class="punctuation">&#123;</span></span><br><span class="line">  <span class="attr">&quot;schema&quot;</span><span class="punctuation">:</span> <span class="string">&quot;orbit-profile/0.4&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;createdAt&quot;</span><span class="punctuation">:</span> <span class="string">&quot;2026-08-16T00:00:00Z&quot;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;runtime&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span> <span class="attr">&quot;launcherKey&quot;</span><span class="punctuation">:</span> <span class="string">&quot;Alt+O&quot;</span> <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">  <span class="attr">&quot;widgets&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span></span><br><span class="line">    <span class="attr">&quot;orbit.music&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span> <span class="attr">&quot;visible&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">true</span></span><span class="punctuation">,</span> <span class="attr">&quot;position&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span> <span class="attr">&quot;x&quot;</span><span class="punctuation">:</span> <span class="number">0</span><span class="punctuation">,</span> <span class="attr">&quot;y&quot;</span><span class="punctuation">:</span> <span class="number">0</span> <span class="punctuation">&#125;</span> <span class="punctuation">&#125;</span><span class="punctuation">,</span></span><br><span class="line">    <span class="attr">&quot;orbit.clock&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span> <span class="attr">&quot;visible&quot;</span><span class="punctuation">:</span> <span class="literal"><span class="keyword">false</span></span><span class="punctuation">,</span> <span class="attr">&quot;position&quot;</span><span class="punctuation">:</span> <span class="punctuation">&#123;</span> <span class="attr">&quot;x&quot;</span><span class="punctuation">:</span> <span class="number">120</span><span class="punctuation">,</span> <span class="attr">&quot;y&quot;</span><span class="punctuation">:</span> <span class="number">-20</span> <span class="punctuation">&#125;</span> <span class="punctuation">&#125;</span></span><br><span class="line">  <span class="punctuation">&#125;</span></span><br><span class="line"><span class="punctuation">&#125;</span></span><br></pre></td></tr></table></figure>
+<p><strong>验收条件：</strong> Profile 可导出为 JSON、在同 schema 下重新导入、忽略未知 Widget、不因一个 Widget 状态损坏而阻断其他 Widget 恢复。它必须向用户说明数据留在浏览器本地，导出完全由用户主动触发。</p>
+<h2 id="六-测试与质量门禁">六、测试与质量门禁</h2>
+<p>v0.4 的架构质量不能只由纯函数单测证明。现有项目已经对 LifecycleScope、Registry 和 ExpandPolicy 做了基础测试，但 CI 只调用 <code>test:unit</code>，没有执行本地 <code>npm test</code> 中的 state normalization 检查。<a href="https://github.com/ykpgp0928/Orbit/blob/main/package.json" title="构建与测试脚本">5</a> <a href="https://github.com/ykpgp0928/Orbit/blob/main/.github/workflows/ci.yml" title="CI 工作流">6</a> v0.4 必须建立分层验证。</p>
+<table>
+<thead>
+<tr>
+<th>层级</th>
+<th>测试对象</th>
+<th>发布门槛</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Unit</td>
+<td>Layout、Gesture、Snap、Contract schema、Profile migration。</td>
+<td>关键纯逻辑分支与错误输入全覆盖。</td>
+</tr>
+<tr>
+<td>DOM integration</td>
+<td>mount/visible/destroy/remount、portal 所有权、Launcher、焦点。</td>
+<td>Music、Clock、Reference Widget 至少各有一条完整生命周期用例。</td>
+</tr>
+<tr>
+<td>Regression</td>
+<td>三 Widget 并存、隐藏全部、ghost 恢复、窄视口、reduced motion。</td>
+<td>每次发布前自动执行。</td>
+</tr>
+<tr>
+<td>Manual device</td>
+<td>iOS/Android 长按、拖拽、Dock、横竖屏、低端性能。</td>
+<td>发布 checklist 中必须记录设备与浏览器。</td>
+</tr>
+<tr>
+<td>Package</td>
+<td>build、dist sync、README link、<code>npm pack --dry-run</code>。</td>
+<td>CI 阻断任何产物或文档漂移。</td>
+</tr>
+</tbody>
+</table>
+<p>CI 最小命令应收敛为一个入口，例如 <code>npm run verify</code>；工作流和本地开发都调用它，避免 test 集合漂移。发布前应通过 <code>npm pack --dry-run</code> 检查：分发包必须含 Runtime、所有首批 Contract 文档、迁移说明、许可与可运行示例。</p>
+<h2 id="七-文档与生态交付物">七、文档与生态交付物</h2>
+<p>v0.4 的交付不只是 JS 产物。必须同时交付一个“让外部人成功”的文档闭环，且用非仓库作者的视角写作。</p>
+<table>
+<thead>
+<tr>
+<th>文件</th>
+<th>面向对象</th>
+<th>必须回答的问题</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>docs/CONTRACT-ALPHA.md</code></td>
+<td>Widget 作者</td>
+<td>如何声明、挂载、持久化、使用 portal、处理销毁。</td>
+</tr>
+<tr>
+<td><code>docs/HOST-MIGRATION-v0.4.md</code></td>
+<td>v0.3 Host 维护者</td>
+<td><code>registerHost</code> 如何迁移；哪些 API 仍兼容；何时废弃。</td>
+</tr>
+<tr>
+<td><code>docs/PROFILE.md</code></td>
+<td>用户与主题维护者</td>
+<td>数据保存在何处；如何导出、导入和清除；schema 如何演进。</td>
+</tr>
+<tr>
+<td><code>examples/reference-widget/</code></td>
+<td>独立开发者</td>
+<td>如何从零接入一个不依赖内部私有模块的 Widget。</td>
+</tr>
+<tr>
+<td><code>docs/SECURITY.md</code></td>
+<td>部署者</td>
+<td>外部音源、CSP、动态文本、第三方 Widget 的边界。</td>
+</tr>
+<tr>
+<td><code>CHANGELOG.md</code></td>
+<td>全部使用者</td>
+<td>Contract Alpha 的稳定性等级、已知限制与升级动作。</td>
+</tr>
+</tbody>
+</table>
+<h2 id="八-v0-4-发布定义-definition-of-done">八、v0.4 发布定义（Definition of Done）</h2>
+<p>v0.4 可以发布，必须同时满足以下条件：</p>
+<ol>
+<li><strong>Lifecycle 可信。</strong> Music、Clock 和 Reference Widget 都通过至少三次连续 destroy/remount 的自动 DOM 测试；无重复全局监听、无残留 portal、无已销毁 root 的异步复活。</li>
+<li><strong>Contract 可用。</strong> 一个不依赖 Orbit 内部源码的 Reference Widget 能仅通过公开 Contract 接入 Runtime，并使用拖拽、显隐、Launcher、Profile 与销毁服务。</li>
+<li><strong>Core 不再硬编码首批 Widget。</strong> Launcher 标签、可见性、portal 所有权和实例列表由 Contract 元数据提供；内置 Widget 只是注册者。</li>
+<li><strong>Profile 可移植。</strong> 用户可安全导入导出本地 Profile；未知 Widget 和 schema 兼容失败均有清晰、非破坏性的行为。</li>
+<li><strong>质量闭环存在。</strong> CI 使用统一 verify 命令，覆盖 unit、DOM integration、构建产物、文档链接和 npm pack；README 与发布包无死链。</li>
+<li><strong>对外语义诚实。</strong> 版本仍标示 Contract 为 Alpha，不承诺未经真实外部使用验证的 1.0 稳定性。</li>
+</ol>
+<h2 id="九-v0-4-的北极星指标">九、v0.4 的北极星指标</h2>
+<p>不要用 GitHub Star、Widget 数量或代码行数评估 v0.4。真正的北极星问题是：</p>
+<blockquote>
+<p><strong>一个不熟悉 Orbit 内部代码的开发者，能否在不复制拖拽、吸附、移动端手势、显隐、焦点管理、生命周期和本地状态代码的情况下，完成一个可发布 Widget 的接入？</strong></p>
+</blockquote>
+<p>建议记录如下事实指标：外部示例 Widget 的业务代码行数；接入一个空站点的步骤数；destroy/remount 回归次数；三 Widget 并存时的手势冲突数；以及独立开发者首次接入成功率。这些指标比新增 Feature 更能说明 Orbit 是否开始拥有“被依赖”的理由。</p>
+<h2 id="十-风险与决策原则">十、风险与决策原则</h2>
+<p>最大的风险不是进度慢，而是过度抽象。Contract 若要求每个 Widget 理解太多布局和状态细节，就会重复当前 Music Host 的复杂性；若 Contract 太薄，又无法减少接入样板。因此 v0.4 应只固定生命周期、可见性、服务请求、portal 所有权与 Profile 五类横切语义，将复杂业务 UI 保留给 Host。</p>
+<p>第二个风险是把 Profile 误做成锁定用户。Orbit 应坚持 local-first、可导出、可删除，只有在多个独立站点/主题真的使用同一 schema 后，才讨论可选同步。真正有价值的不可替代性来自<strong>互操作与兼容性网络</strong>，而不是封闭数据。</p>
+<p>第三个风险是“官方示例伪装成生态”。v0.4 的三个 Widget 可以全部由核心仓库维护，但其中至少一个要以外部作者文档、独立目录和仅使用公开 API 的方式实现。这样才能发现 Contract 的缺口，而不是继续用内部知识绕过它。</p>
+<h2 id="参考资料">参考资料</h2>
+]]></content>
+      <categories>
+        <category>开发</category>
+        <category>方案</category>
+      </categories>
+      <tags>
+        <tag>开发</tag>
+        <tag>编程</tag>
+        <tag>方案</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>嘉豪说</title>
+    <url>/2026/05/18/%E5%98%89%E8%B1%AA%E8%AF%B4/</url>
+    <content><![CDATA[<h2 id="内容">内容</h2>
+<p>今世之人，遇其不知之事，皆谓施者曰：“子，‘嘉豪’者也”疑之，问曰“何故言此？”对曰：“其行为吾所不知也，定为奇技淫巧，沐猴而冠、妄自尊大‌，何故不嘲邪？”呜呼，人之别于众者，何罪之有，闻此污秽辱耳之言，其真然也？</p>
+<p>信乎，却有行者无实材（通“才”），为（四声，为了）人视之所为（二声，做）。但此非辱人之故。不知而言余人少知（通“智”，下同）者，实少知也。</p>
+<p>人之立于世之本，乃言其所知，学其不知，正其错知，而非不知、错知亦言，闻逆耳（指忠言）而不悔。子曰：“知之为知之，不知为不知，是知也”，言即此也。</p>
+<p>p.s:括号为注释</p>
+<h2 id="创作背景">创作背景</h2>
+<p>日常中，嘉豪一词被渐渐滥用，观现象有感，故言此。思想可看<a href="https://ykpgp0928.dpdns.org/2026/05/16/%E4%B8%80%E4%BA%9B%E5%B0%8F%E7%9A%84%E7%9C%8B%E6%B3%95/">第一篇文章</a></p>
+]]></content>
+      <categories>
+        <category>杂谈</category>
+      </categories>
+      <tags>
+        <tag>见解与看法</tag>
+        <tag>诗词</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>少年游·秋悲</title>
+    <url>/2026/05/17/%E5%B0%91%E5%B9%B4%E6%B8%B8%C2%B7%E7%A7%8B%E6%82%B2/</url>
+    <content><![CDATA[<div class="hbe hbe-container" id="hexo-blog-encrypt"
+     data-hbe-format="4"
+     data-wpm="密码错误，请重新输入"
+     data-whm="密码错误，请重新输入"
+     data-salt="da065c4dd83a3500cfa32a5435a4dc8c019123d670b8327c58e0428cc30c3d10"
+     data-nonce="0ecdc9f5e48b237b32c7719b"
+     data-kdf-iterations="650000"
+     data-auto-save="false">
+  <script id="hbeData" type="hbeData">
+    2d5b4196c212d95d6506fd0b7b3314fa03ae7c37b56dff5a8c4979acf4be096b27e8ee642a81ff589b638ec7579dfd34018a923a6a8dbfffe6fef19b0673935f03d452f2fda37f3f840f02dc0a270b1bc8889344a92c4e982f803574c5095a7c897a4a115330c4e085d95d0feca4100a67299ff070588f30f52aa6921c2595b0ac07d54acfa6964b446c34cc2f5ef0c41079d12cc1c99158dcf9a395fc83923bd42621107eb28526ccb87f039f1b57c2707b750888b31ca37935b120066964b923e2420e95d7300b75cc2c9dafcc1781d4ce5017769e13653610ffaf53af93a69cea032a2d00df7f784a9600671d160e56079802d32ec4acbd8694c5d78931ea52a48d9cf5964e0eccadda6e585c638d30fcf9be5b3145fddb8ac4538995864375403216f29ccab3d9ec5173862dcf092c870cc1c92781235f7d1c539548deb1046a4a0219af687c66aa0c4cb61c9b72ed5609cd5de96ccf53917238ffa34572fe10a97b90a0e686284f9534877db9bb520094906d5752a1e68346801767357aabaf1dcb9c4c6163bef4e3e9a9cf0819ec4f85f95f8d53015f08cbcd1c8eb5826fb8ff5bb95f46fe87007f6d307350ce9f6cda71183097b1035ea4fad942f4acc069a120800aa8f00338c08abbbe3354b02e4fdc3fe66cbc2fab2539745121cd3634cc0dc14923c0f76748098f9b055f50b175931c46e8db2961135cc638327baad8e1c805667e6095f23a19621e1329365e08423e91f9490c3790ad2ea03ace555873f65b0cace39984a2813cf5bb8594bf8ac301539fecc461d1dc1440ecd55afb3b932e68854f9ffad71f5ae36566e689008abf9209d9adc6d313a62396fba67d60ba717736acb19ace35606d125ae1b3d2100da6a50169f66fb46268c6c4173baa206df9c72c59dc1e0c28eea33870262a92fdc87814a6c60883e2e8180be0c475df9978fd7dc37e94777661f9fbe3bfc9d07c8cc28bde8418b23e3e6933290f1baa601641a7f92d44cde61842b06cf0cc77bd275a1b321ede0ac7b93ec8814ff432d8a2ac63554200ce1028d785384fee4217bfa8df0492c21893bc61ea8e7ad9d5be50c2958062b57247b2dda99cf0178e7e3b3c47b681b2432de23d071f489cab01d3fb06392f1d09d57b70a292fb7acbaa2dc3ab185855594869dad91114b86acc578aa926e6b6443f45d7608b59babdc162b43a3786d377a02806132b9f957cb358576efaa8d46e37c5f17a9d2bd71a0071d041ce6c1bd4c3ef69a850a6b8c8f311f66beea62b03d657af4f93727965dcba59d8debda116b6df81eeccd77e85fefdee623014c1b7f7b629cdaf5340450fdac8c7913ac29e90ece86a85b52b03d8b811a9213a4c79911c34dbf9f2348e610e7e935f2e0832ebb471c11e96117eed07e3b02552200643727061e63b786c341bf139d1a6b41529c191377c032908063a4db73ae7b3e245d4b5d07c22e02633ab1a07ca92d07c22ace1e5f469b4ee1971a6d12a83c1394c4c6336cfc8be5950b0f9acf79b3d9923cab5b4b24fc7f70d643442bc827044baafc1a66bbb1ae89be515a6c7031fe5a2ea19e2ad24c21b341338d5bf4f2b95c6b0528a4d45632256030d15a6cee85347a31e0b1146c08a0b44ee84addd58bca4d5b0b2df576d58d968f69e95e4d6420f66fc92e2534e2aacbf4a0bd5d0a731c0cb62724ff1e61552ee78ad8a652d714415e70f9b3dba62ae1171c887ae3c89c923cacdfe1a82b566c69029bed7578e7b18726f02ab072236b774af4e68baaa9da91aee0e5e24a5c92a21bdf2cbac72fb776c46c78c23f10cb61c0eb0feab46380da7e19903fae5598cd1f5114449807986c2e1a0fb567244915da333a6d28041b5d044f4543a8310b1cb7d5df62d63670d3755a35bc6fb45c412b0303a21cb7062ca0df5542eb1fe35546396b950e73e5eac3435b6e419deec3efbf452af860338189fa1845bc26c1396ed826b584fdd5cef54f0ef1b772ebfef5dbbfa38f689888cd7360240aef967d8fd42b10af3966dd05fa99f3ac9a4ae0f3be0c2a0c0e0edcec44b1a95d5359058901d1cbccf5760ce390e456e3d8b5d6dd7e45a67732550df7a85ea57e95bccc113f3e4d43d42942ad4571305dac396183075ff6658def59d45a373a27aa4db05e813379442cd12a7ee72a9cf61bc58b4bc2b076de7dc6fe5a45ea50b4a434619ccea57ad29bc0857fc81f7cb25cc78b109471a5f7f5d35c0dddf40e40529134bdacc1f848ec0a80c26d442bfd717e5c0e22847e076d8e16234613ceace2197bd8ca4cf0a7c40f0c4f32319d1eb6356d19d6286b215b28aec100a3c5e5f0d7489c0c838c1278f811a307d479140b350771d81a883f825266e647c36b40a5654fee6365e5d13a037a702872771e5abe25fa1698adf2d1307dd8564151c2b7e30994ec13fe91f971cf8e6e6648cf3fc507f427ece87b1a5b1bfe1b589a238b47734761aa41553a26aaf13f8492aaa1012252dafb2d0f5d1acb4e2eeeddc78da2e656769baf7c14e327875a7dcef46cb7b528ea4a008aee8368104b603dfcff668247c1a8b56bf994f6e2e974a5e42696730eec617cf54ecc2e4d9a52ff69f
+  </script>
+  <div class="hbe hbe-content">
+    <form id="hbeForm" class="hbe hbe-form" onsubmit="return false">
+      <div class="hbe hbe-input hbe-input-default">
+      <input class="hbe hbe-input-field hbe-input-field-default" type="password" id="hbePass">
+      <label class="hbe hbe-input-label hbe-input-label-default" for="hbePass">
+        <span class="hbe hbe-input-label-content hbe-input-label-content-default">请输入密码</span>
+      </label>
+    </div>
+      <button class="hbe hbe-button" type="submit">Decrypt</button>
+      <div class="hbe hbe-error" role="alert" aria-live="polite"></div>
+    </form>
+  </div>
+</div>
+<script data-pjax src="/lib/hbe.9e70f1e1d2.js"></script><link href="/css/hbe.style.css" rel="stylesheet" type="text/css">]]></content>
+      <categories>
+        <category>日常</category>
+      </categories>
+      <tags>
+        <tag>诗词</tag>
+        <tag>抒情</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>念李华</title>
+    <url>/2026/06/28/%E5%BF%B5%E6%9D%8E%E5%8D%8E/</url>
+    <content><![CDATA[<h2 id="创作背景">创作背景</h2>
+<h3 id="致李华：">致李华：</h3>
+<p>展信佳，见信如晤</p>
+<p>自小升初的那个暑假，我与李华相识，当时一瞬间我便被她打动，不是因为幽默风趣，而是气质，她那种关心他人，明辨是非却又开朗的气质令我深深的折服</p>
+<p>在这两年多的相处之中，我们对彼此都逐渐的了解，她经常为我们许下承诺，可是最后竟未能兑现，她说她会教到我们毕业，最终却食了言</p>
+<p>在上一个寒假，我开始想华姐的解忧杂货店投稿，我从未想过我的投稿会被关注到，可华姐却十分认真的看完了，甚至他和我喜欢的作者都是一致的</p>
+<p>后来我和她说的逐渐增多，从读的书，到自己的见解，再到自己写的诗词与经历，再到自己的内心，最后又落回了校园生活</p>
+<p>我感觉你与我仿佛是亲密无间的，你是真正了解我的人。</p>
+<p>你和我们常常展望未来，我也一直期盼着和你一起迈向更好的自己的未来</p>
+<p>再最后的那节课上，我其实已经感觉到了什么，你今天的语气好似格外低沉，平静，欢喜也好似强颜欢笑，还放出了许多过去你和我们之间的回忆，我隐隐地感到不安</p>
+<p>命运或许就是如此的造化弄人吧，我们家是养鸡的，在那一天，那一上午，那两个小时，一辆卡车轰隆隆的驶入了院中，仿佛是末日的咆哮要将这天地撕裂，人家来拉鸡了。</p>
+<p>我们家的家庭条件并不宽裕，我便只好在艰难中做出了抉择，我放弃了你，选择去帮忙。</p>
+<p>接下来似乎该说若我知道会这样的话一定不会那么选的，但我并不认可，时尚有一些是命中注定的，正是一次次的错过和失去使得我们的生活更加丰富多彩，若不是错过，我的悲痛或许也不会如此的缓慢而持久</p>
+<p>对于人，有的课题是需要一生去解决的，以至于一生都解决不了，离别便是其中之一，离别啊，你总是充满悲情，却又在绝境中暗蕴希望</p>
+<p>不过这或许也并不是坏事吧，你与我都在迈向更好的未来，都在实现曾经的承诺，不过是不再一起</p>
+<p>我们的生活没有荧幕上的轰轰烈烈，只是琐事中的细水流长</p>
+<p>愿你见到这封信</p>
+<p>勿忘挂念</p>
+<p>你的学生，国翔</p>
+<h2 id="内容">内容</h2>
+<p><strong>少年游·念李华</strong></p>
+<p><strong><em>梨花承雨雨萧萧，悲悔上眉梢。提笔难言，望窗长叹，年少念难消。</em></strong></p>
+<p><strong><em>敢问春风来何处，入骨别离刀。陌上相逢 ，悄然分散。独上月楼高</em></strong></p>
+]]></content>
+      <categories>
+        <category>日常</category>
+      </categories>
+      <tags>
+        <tag>诗词</tag>
+        <tag>抒情</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>浣溪沙·玉树垂枝立雪兰</title>
+    <url>/2026/05/16/%E6%B5%A3%E6%BA%AA%E6%B2%99%C2%B7%E7%8E%89%E6%A0%91%E5%9E%82%E6%9E%9D%E7%AB%8B%E9%9B%AA%E5%85%B0/</url>
+    <content><![CDATA[<h2 id="创作背景">创作背景</h2>
+<p>春意渐渐漫过严寒的冰障，为校园带来了许久不见的生机，校园中时常被我忽略的玉兰不知何时竟开了花</p>
+<p>洁白的玉兰挺立枝顶，直面着春暖与冬寒的碰撞，没有绿叶的衬托，只有孤零零的一朵花，显得如此高雅洁白</p>
+<p>哪怕是春日的微风拂过，他也会大片大片的落下花瓣，花瓣覆满了整个甬路——不，或许应该说是甬路上长出了一片花瓣。他们虽在地上，却仍然燃烧自己的生命，散发出属于自己的香</p>
+<p><em><strong>不为别的，只为证明</strong></em></p>
+<h2 id="内容">内容</h2>
+<p><strong>浣溪沙·玉树垂枝立雪兰</strong></p>
+<p>玉树垂枝立雪兰，春风裹暖给人欢。试问谁可胜其端？</p>
+<p>花落缤纷香满径，傲然枝顶胜春寒。冰肤玉骨仅花单。</p>
+<h2 id="写在后面">写在后面</h2>
+<p>这是一份过期的博客，创作背景是凭借记忆来写的</p>
+]]></content>
+      <categories>
+        <category>日常</category>
+      </categories>
+      <tags>
+        <tag>诗词</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>睡莲</title>
+    <url>/2026/07/26/%E7%9D%A1%E8%8E%B2/</url>
+    <content><![CDATA[<h2 id="作品">作品</h2>
+<p>选的是龙谱格三</p>
+<p><em><strong>临江仙</strong></em></p>
+<p><strong><em>自是幽幽清雾里，琼楼日月相辉。<br>
+微风轻拂启朱扉。<br>
+不知何事过，此去恐难归。</em></strong></p>
+<p><strong><em>泥泞池中邻腐藻，寂寥独放芳菲。<br>
+翩翩独着白纱衣。<br>
+悠悠开合念，心在便无违。</em></strong></p>
+<h2 id="创作背景">创作背景</h2>
+<p>家父在院子中种了一缸睡莲，用的是家里废弃的陶土缸，一直也未曾开花，近些天却展露了自己的芬芳</p>
+<p>她的花瓣洁白，淡雅，在点点细雨下好似美人落泪，那种清幽淡雅，漂浮不定，是荷花所不可比拟的，而她昼开夜合的特性，更赋予了她一层新的内涵，周而复始，重复不断，放平心态，哪怕环境恶劣，也做自己</p>
+<p>她的美丽仿若天上的仙子，本应在琉璃琼宫，淡雅薄雾之中，可却惨遭贬谪，但她却在黑暗中仍任保持自己，因为她本就知道自己不属于那里，哪怕无法回去，只要做好自己便可，这正是谪花（被贬谪成花的仙人）</p>
+<p>毕竟不断地起落才是人生的常态，才是生活底色</p>
+<p>多说无益，一切尽在词中，不言而喻</p>
+<h2 id="写在后边">写在后边</h2>
+<p>这一次创作背景在后面，是刻意为之，我想让读者自己在词中品析，感受内涵，思想，而不是知道主题之后去词中找</p>
+]]></content>
+      <categories>
+        <category>日常</category>
+      </categories>
+      <tags>
+        <tag>诗词</tag>
+        <tag>抒情</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>题解GESP202603五级有限不循环⼩数</title>
+    <url>/2026/05/17/%E9%A2%98%E8%A7%A3GESP202603%E4%BA%94%E7%BA%A7%E6%9C%89%E9%99%90%E4%B8%8D%E5%BE%AA%E7%8E%AF%E2%BC%A9%E6%95%B0/</url>
+    <content><![CDATA[<p><em><strong>先说结论，这是一道与唯一分解定理有一定关系的题目</strong></em></p>
+<h1>Part 1 分析题面</h1>
+<p>若题目说若 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mn>1</mn><mi>a</mi></mfrac></mrow><annotation encoding="application/x-tex">\frac{1} {a}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.1901em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8451em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span> 可化为一个有限的，不循环的小数，则称  <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi></mrow><annotation encoding="application/x-tex">a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">a</span></span></span></span> 为终止数。</p>
+<p>看到分数，自然而然地联想到唯一分解定理，那我们分解后再看怎样才能确定 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mn>1</mn><mi>a</mi></mfrac></mrow><annotation encoding="application/x-tex">\frac{1} {a}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.1901em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8451em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span> 是有限小数。</p>
+<h1>Part 2 证明</h1>
+<p>显而易见，只要一个分数可以化成 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mi>k</mi><msup><mn>10</mn><mi>N</mi></msup></mfrac></mrow><annotation encoding="application/x-tex">\frac{k}{10^N}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.232em;vertical-align:-0.3519em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801em;"><span style="top:-2.6481em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span><span class="mord mtight"><span class="mord mtight">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7741em;"><span style="top:-2.786em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight" style="margin-right:0.109em;">N</span></span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.3519em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span>( <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>k</mi></mrow><annotation encoding="application/x-tex">k</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6944em;"></span><span class="mord mathnormal" style="margin-right:0.0315em;">k</span></span></span></span> 为整数)的形式，那么它就是一个有限小数。那我们的目的就变成了证明 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mn>1</mn><mi>a</mi></mfrac><mo>=</mo><mfrac><mi>k</mi><msup><mn>10</mn><mi>N</mi></msup></mfrac></mrow><annotation encoding="application/x-tex">\frac{1}{a} = \frac{k}{10^N}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.1901em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8451em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1.232em;vertical-align:-0.3519em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801em;"><span style="top:-2.6481em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span><span class="mord mtight"><span class="mord mtight">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7741em;"><span style="top:-2.786em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight" style="margin-right:0.109em;">N</span></span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.3519em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></p>
+<p>如果说 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi></mrow><annotation encoding="application/x-tex">a</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">a</span></span></span></span> 在分解质因数后只有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn></mrow><annotation encoding="application/x-tex">2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">2</span></span></span></span> 和 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>5</mn></mrow><annotation encoding="application/x-tex">5</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">5</span></span></span></span> 两个质因数，即当 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>a</mi><mo>=</mo><msup><mn>2</mn><mi>m</mi></msup><mo>⋅</mo><msup><mn>5</mn><mi>n</mi></msup></mrow><annotation encoding="application/x-tex">a = 2^m \cdot 5^n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">a</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.6644em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span></span><span class="base"><span class="strut" style="height:0.6644em;"></span><span class="mord"><span class="mord">5</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6644em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span> 时，则 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mn>1</mn><mi>a</mi></mfrac></mrow><annotation encoding="application/x-tex">\frac{1} {a}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.1901em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8451em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span> 是有限小数，其他都是无限小数。</p>
+<h2 id="1-结论一：当-a-2-m-5-n-时-则-1-a-是有限小数">1.结论一：当 a=2^m·5^n 时，则 1/a 是有限小数</h2>
+<h3 id="1-m-n">1. m&gt;n</h3>
+<p>当 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>&gt;</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">m&gt;n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5782em;vertical-align:-0.0391em;"></span><span class="mord mathnormal">m</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&gt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span> 时，我们需要补齐 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>5</mn></mrow><annotation encoding="application/x-tex">5</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">5</span></span></span></span> 的个数。给分子和分母同时乘以 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>5</mn><mrow><mi>m</mi><mo>−</mo><mi>n</mi></mrow></msup></mrow><annotation encoding="application/x-tex">5^{m-n}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7713em;"></span><span class="mord"><span class="mord">5</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7713em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">m</span><span class="mbin mtight">−</span><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span></span> ：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mfrac><mn>1</mn><mrow><msup><mn>2</mn><mi>m</mi></msup><mo>⋅</mo><msup><mn>5</mn><mi>n</mi></msup></mrow></mfrac><mo>=</mo><mfrac><mrow><mn>1</mn><mo>⋅</mo><msup><mn>5</mn><mrow><mi>m</mi><mo>−</mo><mi>n</mi></mrow></msup></mrow><mrow><msup><mn>2</mn><mi>m</mi></msup><mo>⋅</mo><msup><mn>5</mn><mi>n</mi></msup><mo>⋅</mo><msup><mn>5</mn><mrow><mi>m</mi><mo>−</mo><mi>n</mi></mrow></msup></mrow></mfrac><mo>=</mo><mfrac><msup><mn>5</mn><mrow><mi>m</mi><mo>−</mo><mi>n</mi></mrow></msup><mrow><msup><mn>2</mn><mi>m</mi></msup><mo>⋅</mo><msup><mn>5</mn><mi>m</mi></msup></mrow></mfrac><mo>=</mo><mfrac><msup><mn>5</mn><mrow><mi>m</mi><mo>−</mo><mi>n</mi></mrow></msup><mrow><mo stretchy="false">(</mo><mn>2</mn><mo>⋅</mo><mn>5</mn><msup><mo stretchy="false">)</mo><mi>m</mi></msup></mrow></mfrac><mo>=</mo><mfrac><msup><mn>5</mn><mrow><mi>m</mi><mo>−</mo><mi>n</mi></mrow></msup><msup><mn>10</mn><mi>m</mi></msup></mfrac></mrow><annotation encoding="application/x-tex">\frac{1}{2^m \cdot 5^n} = \frac{1 \cdot 5^{m-n}}{2^m \cdot 5^n \cdot 5^{m-n}} = \frac{5^{m-n}}{2^m \cdot 5^m} = \frac{5^{m-n}}{(2 \cdot 5)^m} = \frac{5^{m-n}}{10^m}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.0074em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord">5</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.1343em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4483em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord">5</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord">5</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6973em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">m</span><span class="mbin mtight">−</span><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord">5</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7713em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">m</span><span class="mbin mtight">−</span><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.1343em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4483em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord">5</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">5</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7713em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">m</span><span class="mbin mtight">−</span><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.3843em;vertical-align:-0.936em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4483em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mopen">(</span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">5</span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">5</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7713em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">m</span><span class="mbin mtight">−</span><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.1343em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4483em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">5</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7713em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">m</span><span class="mbin mtight">−</span><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
+<h3 id="2-m-n">2. m&lt;n</h3>
+<p>当 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>&lt;</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">m&lt;n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.5782em;vertical-align:-0.0391em;"></span><span class="mord mathnormal">m</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">&lt;</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span> 时，我们需要补齐 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn></mrow><annotation encoding="application/x-tex">2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">2</span></span></span></span> 的个数。给分子和分母同时乘以 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>2</mn><mrow><mi>n</mi><mo>−</mo><mi>m</mi></mrow></msup></mrow><annotation encoding="application/x-tex">2^{n-m}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.7713em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7713em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mbin mtight">−</span><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span></span></span></span></span> ：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mfrac><mn>1</mn><mrow><msup><mn>2</mn><mi>m</mi></msup><mo>⋅</mo><msup><mn>5</mn><mi>n</mi></msup></mrow></mfrac><mo>=</mo><mfrac><mrow><mn>1</mn><mo>⋅</mo><msup><mn>2</mn><mrow><mi>n</mi><mo>−</mo><mi>m</mi></mrow></msup></mrow><mrow><msup><mn>2</mn><mi>m</mi></msup><mo>⋅</mo><msup><mn>2</mn><mrow><mi>n</mi><mo>−</mo><mi>m</mi></mrow></msup><mo>⋅</mo><msup><mn>5</mn><mi>n</mi></msup></mrow></mfrac><mo>=</mo><mfrac><msup><mn>2</mn><mrow><mi>n</mi><mo>−</mo><mi>m</mi></mrow></msup><mrow><msup><mn>2</mn><mi>n</mi></msup><mo>⋅</mo><msup><mn>5</mn><mi>n</mi></msup></mrow></mfrac><mo>=</mo><mfrac><msup><mn>2</mn><mrow><mi>n</mi><mo>−</mo><mi>m</mi></mrow></msup><mrow><mo stretchy="false">(</mo><mn>2</mn><mo>⋅</mo><mn>5</mn><msup><mo stretchy="false">)</mo><mi>n</mi></msup></mrow></mfrac><mo>=</mo><mfrac><msup><mn>2</mn><mrow><mi>n</mi><mo>−</mo><mi>m</mi></mrow></msup><msup><mn>10</mn><mi>n</mi></msup></mfrac></mrow><annotation encoding="application/x-tex">\frac{1}{2^m \cdot 5^n} = \frac{1 \cdot 2^{n-m}}{2^m \cdot 2^{n-m} \cdot 5^n} = \frac{2^{n-m}}{2^n \cdot 5^n} = \frac{2^{n-m}}{(2 \cdot 5)^n} = \frac{2^{n-m}}{10^n}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.0074em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord">5</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.1343em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4483em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.6973em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mbin mtight">−</span><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord">5</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7713em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mbin mtight">−</span><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.1343em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4483em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord">5</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7713em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mbin mtight">−</span><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.3843em;vertical-align:-0.936em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4483em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mopen">(</span><span class="mord">2</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord">5</span><span class="mclose"><span class="mclose">)</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7713em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mbin mtight">−</span><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.936em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.1343em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.4483em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7713em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">n</span><span class="mbin mtight">−</span><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
+<h3 id="3-m-n">3. m=n</h3>
+<p>当 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>m</mi><mo>=</mo><mi>n</mi></mrow><annotation encoding="application/x-tex">m=n</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">m</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:0.4306em;"></span><span class="mord mathnormal">n</span></span></span></span> 时，分母已经是 10 的幂：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mfrac><mn>1</mn><mrow><msup><mn>2</mn><mi>m</mi></msup><mo>⋅</mo><msup><mn>5</mn><mi>m</mi></msup></mrow></mfrac><mo>=</mo><mfrac><mn>1</mn><msup><mn>10</mn><mi>m</mi></msup></mfrac></mrow><annotation encoding="application/x-tex">\frac{1}{2^m \cdot 5^m} = \frac{1}{10^m}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.0074em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord"><span class="mord">2</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mbin">⋅</span><span class="mspace" style="margin-right:0.2222em;"></span><span class="mord"><span class="mord">5</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.0074em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5904em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight">m</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
+<p>在上述所有情况中，分数 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mn>1</mn><mi>a</mi></mfrac></mrow><annotation encoding="application/x-tex">\frac{1}{a}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.1901em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8451em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight">a</span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span> 最终都可以写成如下形式：</p>
+<p><span class="katex-display"><span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML" display="block"><semantics><mrow><mfrac><mn>1</mn><mi>a</mi></mfrac><mo>=</mo><mfrac><mi>K</mi><msup><mn>10</mn><mi>N</mi></msup></mfrac></mrow><annotation encoding="application/x-tex">\frac{1}{a} = \frac{K}{10^N}
+</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:2.0074em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3214em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal">a</span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:2.0463em;vertical-align:-0.686em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:1.3603em;"><span style="top:-2.314em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.7673em;"><span style="top:-2.989em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.109em;">N</span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.677em;"><span class="pstrut" style="height:3em;"></span><span class="mord"><span class="mord mathnormal" style="margin-right:0.0715em;">K</span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.686em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span></span></p>
+<p>其中 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>K</mi></mrow><annotation encoding="application/x-tex">K</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">K</span></span></span></span> 是一个整数， <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi><mo>=</mo><mi>max</mi><mo>⁡</mo><mo stretchy="false">(</mo><mi>m</mi><mo separator="true">,</mo><mi>n</mi><mo stretchy="false">)</mo></mrow><annotation encoding="application/x-tex">N = \max(m, n)</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">N</span><span class="mspace" style="margin-right:0.2778em;"></span><span class="mrel">=</span><span class="mspace" style="margin-right:0.2778em;"></span></span><span class="base"><span class="strut" style="height:1em;vertical-align:-0.25em;"></span><span class="mop">max</span><span class="mopen">(</span><span class="mord mathnormal">m</span><span class="mpunct">,</span><span class="mspace" style="margin-right:0.1667em;"></span><span class="mord mathnormal">n</span><span class="mclose">)</span></span></span></span> 。</p>
+<p>根据十进制计数法的定义，任何除以 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><msup><mn>10</mn><mi>N</mi></msup></mrow><annotation encoding="application/x-tex">10^N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.8413em;"></span><span class="mord">1</span><span class="mord"><span class="mord">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.8413em;"><span style="top:-3.063em;margin-right:0.05em;"><span class="pstrut" style="height:2.7em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mathnormal mtight" style="margin-right:0.109em;">N</span></span></span></span></span></span></span></span></span></span></span> 的整数，其结果就是在该整数的末尾向前移动 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>N</mi></mrow><annotation encoding="application/x-tex">N</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.109em;">N</span></span></span></span> 位小数点。因为 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>K</mi></mrow><annotation encoding="application/x-tex">K</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0715em;">K</span></span></span></span> 是一个有限长度的整数，所以移动小数点后的结果必然是一个有限小数。</p>
+<h2 id="2-结论二：当不满足-a-2-m-5-n-时-则-1-a-不是有限小数">2.结论二：当不满足 a=2^m·5^n 时，则 1/a 不是有限小数</h2>
+<p>容易想到，如果说里边有一个其他的质数，则经过任意次操作，分数都不能写成 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mfrac><mi>k</mi><msup><mn>10</mn><mi>n</mi></msup></mfrac></mrow><annotation encoding="application/x-tex">\frac{k}{10^n}</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:1.2251em;vertical-align:-0.345em;"></span><span class="mord"><span class="mopen nulldelimiter"></span><span class="mfrac"><span class="vlist-t vlist-t2"><span class="vlist-r"><span class="vlist" style="height:0.8801em;"><span style="top:-2.655em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mtight">1</span><span class="mord mtight"><span class="mord mtight">0</span><span class="msupsub"><span class="vlist-t"><span class="vlist-r"><span class="vlist" style="height:0.5935em;"><span style="top:-2.786em;margin-right:0.0714em;"><span class="pstrut" style="height:2.5em;"></span><span class="sizing reset-size3 size1 mtight"><span class="mord mathnormal mtight">n</span></span></span></span></span></span></span></span></span></span></span><span style="top:-3.23em;"><span class="pstrut" style="height:3em;"></span><span class="frac-line" style="border-bottom-width:0.04em;"></span></span><span style="top:-3.394em;"><span class="pstrut" style="height:3em;"></span><span class="sizing reset-size6 size3 mtight"><span class="mord mtight"><span class="mord mathnormal mtight" style="margin-right:0.0315em;">k</span></span></span></span></span><span class="vlist-s">​</span></span><span class="vlist-r"><span class="vlist" style="height:0.345em;"><span></span></span></span></span></span><span class="mclose nulldelimiter"></span></span></span></span></span> 的形式。</p>
+<h1>Part 3 编写代码</h1>
+<p>既然已经有了证明，那代码就简单多了，只需将 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>L</mi></mrow><annotation encoding="application/x-tex">L</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal">L</span></span></span></span> 到 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mi>R</mi></mrow><annotation encoding="application/x-tex">R</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6833em;"></span><span class="mord mathnormal" style="margin-right:0.0077em;">R</span></span></span></span> 中的数一一对比是否有 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>2</mn></mrow><annotation encoding="application/x-tex">2</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">2</span></span></span></span> 和 <span class="katex"><span class="katex-mathml"><math xmlns="http://www.w3.org/1998/Math/MathML"><semantics><mrow><mn>5</mn></mrow><annotation encoding="application/x-tex">5</annotation></semantics></math></span><span class="katex-html" aria-hidden="true"><span class="base"><span class="strut" style="height:0.6444em;"></span><span class="mord">5</span></span></span></span> 之外的质因数数就可以了。</p>
+<p>AC代码</p>
+<figure class="highlight cpp"><table><tr><td class="code"><pre><span class="line"><span class="meta">#<span class="keyword">include</span><span class="string">&lt;bits/stdc++.h&gt;</span></span></span><br><span class="line"><span class="keyword">using</span> <span class="keyword">namespace</span> std;</span><br><span class="line"><span class="type">int</span> l,r,ans;</span><br><span class="line"><span class="function"><span class="type">int</span> <span class="title">main</span><span class="params">()</span></span>&#123;</span><br><span class="line">    cin&gt;&gt;l&gt;&gt;r;</span><br><span class="line">    <span class="keyword">for</span>(<span class="type">int</span> i=l;i&lt;=r;i++)&#123;</span><br><span class="line">        <span class="type">int</span> a=i;</span><br><span class="line">        <span class="keyword">while</span>(!(a%<span class="number">2</span>))a/=<span class="number">2</span>;</span><br><span class="line">        <span class="keyword">while</span>(!(a%<span class="number">5</span>))a/=<span class="number">5</span>;</span><br><span class="line">        <span class="keyword">if</span>(a==<span class="number">1</span>)ans++;</span><br><span class="line">    &#125;</span><br><span class="line">    cout&lt;&lt;ans;</span><br><span class="line">&#125;</span><br></pre></td></tr></table></figure>
+<p>p.s 本人就是今年三月考五级，当时定式思维了，以为涉及到质数的就用筛法，写的超麻烦。回家又看了一下，不禁感叹当时的自己怎么这么蠢。</p>
+]]></content>
+      <categories>
+        <category>编程</category>
+      </categories>
+      <tags>
+        <tag>OI</tag>
+        <tag>题解</tag>
+      </tags>
+  </entry>
+</search>

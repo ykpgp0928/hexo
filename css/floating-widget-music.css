@@ -1,0 +1,1283 @@
+/* =============================================================================
+ *  Custom Floating Music Player — styles (no APlayer)
+ * =============================================================================
+ *  结构概览：
+ *    #music-player          悬浮根节点（fixed，用 transform 位移）
+ *    .mp-main / .mp-cover   封面球
+ *    .mp-body               控制栏（标题、进度、按钮）
+ *    .mp-list               普通模式歌单（absolute，可上/下展开）
+ *    .mp-dock-btns          吸附模式功能圆球
+ *    .mp-dock-list          吸附模式独立歌单浮层（fixed，挂在 body，勿放进 #music-player）
+ *
+ *  关键状态 class：
+ *    is-open / is-list-open / is-list-closing / list-up
+ *    is-dragging / no-hover-expand / is-snapping
+ *    is-docked / dock-left / dock-right / dock-list-open
+ *    expand-left            控制栏向左展开并翻转布局
+ * =============================================================================
+ */
+
+/* ----- CSS 变量（尺寸、圆角、毛玻璃、阴影） ----- */
+:root {
+  --mp-size: 66px;
+  --mp-size-sm: 52px;
+  --mp-radius: 33px;
+  --mp-radius-open: 16px;
+  --mp-width-open: 360px;
+  --mp-bg: rgba(255, 255, 255, 0.32);
+  --mp-border: rgba(255, 255, 255, 0.42);
+  /* idle: deeper bottom shadow; drag: lighter */
+  --mp-shadow: 0 12px 28px rgba(0, 0, 0, 0.28), 0 4px 10px rgba(0, 0, 0, 0.16);
+  --mp-shadow-drag: 0 3px 10px rgba(0, 0, 0, 0.1);
+  --mp-text: #1a1a1a;
+  --mp-text-sub: rgba(0, 0, 0, 0.55);
+  --mp-accent: #3b82f6;
+  --mp-list-h: 280px;
+}
+
+[data-theme="dark"] {
+  --mp-bg: rgba(30, 30, 30, 0.5);
+  --mp-border: rgba(255, 255, 255, 0.12);
+  --mp-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(0, 0, 0, 0.3);
+  --mp-shadow-drag: 0 3px 12px rgba(0, 0, 0, 0.2);
+  --mp-text: #f0f0f0;
+  --mp-text-sub: rgba(255, 255, 255, 0.55);
+  --mp-accent: #60a5fa;
+}
+
+/* ----- 根节点：固定悬浮球，默认收起为圆形 ----- */
+/* Orbit hide/show animation */
+#music-player,
+.mp-dock-list {
+  transition:
+    opacity 0.22s ease,
+    transform 0.22s ease,
+    visibility 0.22s ease;
+}
+#music-player.orbit-hidden,
+.mp-dock-list.orbit-hidden {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transform: scale(0.92) !important;
+}
+#music-player.orbit-hidden-final,
+.mp-dock-list.orbit-hidden-final {
+  display: none !important;
+}
+
+#music-player {
+  position: fixed !important;
+  left: 20px !important;
+  bottom: 20px !important;
+  width: var(--mp-size) !important;
+  height: var(--mp-size) !important;
+  min-height: var(--mp-size) !important;
+  max-width: none !important;
+  border-radius: var(--mp-radius) !important;
+  background: var(--mp-bg) !important;
+  backdrop-filter: blur(16px) saturate(160%) !important;
+  -webkit-backdrop-filter: blur(16px) saturate(160%) !important;
+  border: 1px solid var(--mp-border) !important;
+  box-shadow: var(--mp-shadow) !important;
+  z-index: 99999 !important;
+  overflow: hidden !important;
+  display: block !important;
+  visibility: visible !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transition:
+    width 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
+    height 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
+    border-radius 0.35s ease,
+    box-shadow 0.25s ease,
+    margin-left 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
+    transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  -webkit-touch-callout: none !important;
+  touch-action: none;
+  color: var(--mp-text);
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  will-change: transform;
+}
+
+#music-player * {
+  user-select: none !important;
+  -webkit-user-select: none !important;
+  -moz-user-select: none !important;
+  -ms-user-select: none !important;
+  -webkit-touch-callout: none !important;
+  box-sizing: border-box;
+}
+
+/* ----- 拖动中：强制收为球，阴影变浅，尺寸可过渡 ----- */
+#music-player.is-dragging {
+  /* animate collapse of control bar while dragging (not only shadow) */
+  transition:
+    width 0.28s cubic-bezier(0.25, 0.8, 0.25, 1),
+    height 0.28s cubic-bezier(0.25, 0.8, 0.25, 1),
+    border-radius 0.28s ease,
+    box-shadow 0.2s ease !important;
+  /* 拖动时 transform 不过渡，避免拖拽发粘 */
+  transition-property: width, height, border-radius, box-shadow !important;
+  cursor: grabbing !important;
+  box-shadow: var(--mp-shadow-drag) !important;
+  width: var(--mp-size) !important;
+  height: var(--mp-size) !important;
+  border-radius: var(--mp-radius) !important;
+  margin-left: 0 !important;
+}
+
+#music-player.is-dragging .mp-body { /* 控制栏主体（收起时透明不可点） */
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: opacity 0.2s ease, visibility 0.2s ease !important;
+}
+
+#music-player.is-dragging.is-list-open {
+  height: var(--mp-size) !important;
+}
+
+#music-player.is-dragging /* ----- 普通模式歌单：相对控制栏 absolute，默认同下 list-up 向上 ----- */
+.mp-list {
+  max-height: 0 !important;
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  transition: max-height 0.25s ease, opacity 0.2s ease !important;
+}
+
+#music-player.is-dragging /* 封面圆形（拖拽手柄） */
+.mp-cover {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12) !important;
+}
+
+/* Snap animation polish */
+/* ----- 松手贴边时的位移过渡 ----- */
+#music-player.is-snapping {
+  transition: transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1) !important;
+}
+
+/* Live magnetic stick while dragging near edge */
+
+/* Expanded states — class-based (mobile tap / forced open) */
+/* ----- 强制展开（移动端点按 / JS setOpen） ----- */
+/* 大卡片宽度仅非吸附；吸附时绝不能走这套，否则按键 left:50% 会跑到容器中心 */
+#music-player.is-open:not(.is-docked) {
+  width: var(--mp-width-open) !important;
+  border-radius: var(--mp-radius-open) !important;
+}
+
+#music-player.is-open:not(.is-docked) .mp-body {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+
+/* List open / closing: keep overflow visible so retract animation is not clipped */
+/* ----- 普通歌单打开或关闭动画中：溢出可见，避免收回被裁切 ----- */
+#music-player.is-list-open,
+#music-player.is-list-closing {
+  border-radius: var(--mp-radius-open) !important;
+  overflow: visible !important;
+}
+
+/* open state details are defined with .mp-list transitions below */
+
+/* ----- 桌面端：真悬停设备才用 :hover 展开（触控本不误触） ----- */
+/* Desktop hover expand: only when device can truly hover (mouse/trackpad)
+   .no-hover-expand — after drag/snap keep collapsed until mouse leaves then re-enters */
+@media (hover: hover) and (pointer: fine) {
+  #music-player:hover:not(.is-docked):not(.is-dragging):not(.no-hover-expand) {
+    width: var(--mp-width-open) !important;
+    border-radius: var(--mp-radius-open) !important;
+  }
+
+  #music-player:hover:not(.is-dragging):not(.no-hover-expand) .mp-body {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  /* Near right edge: expand left, ball stays put */
+  /* 悬停向左：同样由 JS 在 mouseenter 时改 posX；此处仅保留 class 钩子 */
+  #music-player.expand-left:hover:not(.is-dragging):not(.no-hover-expand) {
+    margin-left: calc(var(--mp-size) - var(--mp-width-open)) !important;
+  }
+}
+
+/* ----- 向左展开（原版）：负 margin-left + 桌面 row-reverse ----- */
+#music-player.expand-left .mp-main {
+  flex-direction: row-reverse;
+}
+
+#music-player.expand-left .mp-body {
+  padding: 0 6px 0 12px !important;
+  direction: ltr !important;
+  text-align: left !important;
+  unicode-bidi: isolate;
+}
+
+#music-player.expand-left .mp-meta,
+#music-player.expand-left .mp-title,
+#music-player.expand-left .mp-artist,
+#music-player.expand-left .mp-controller,
+#music-player.expand-left .mp-progress-wrap,
+#music-player.expand-left .mp-progress-bar,
+#music-player.expand-left .mp-progress-played,
+#music-player.expand-left .mp-time,
+#music-player.expand-left .mp-btns {
+  direction: ltr !important;
+  unicode-bidi: isolate;
+}
+
+#music-player.expand-left .mp-title,
+#music-player.expand-left .mp-artist {
+  text-align: left !important;
+}
+
+#music-player.expand-left.is-open {
+  margin-left: calc(var(--mp-size) - var(--mp-width-open)) !important;
+  /* width + margin-left 同曲线，右缘近似不动 */
+  transition-property: width, height, border-radius, box-shadow, margin-left !important;
+}
+
+
+#music-player.is-dragging {
+  margin-left: 0 !important;
+}
+
+@media (max-width: 600px) {
+  #music-player.is-open:not(.is-docked) .mp-main {
+    flex-direction: column !important;
+  }
+  /* 向左展开：容器右缘用 margin-left 锚定；封面在卡片内水平居中 */
+  #music-player.is-open:not(.is-docked).expand-left {
+    margin-left: calc(var(--mp-size) - min(72vw, 260px)) !important;
+  }
+  #music-player.is-open:not(.is-docked).expand-left .mp-main {
+    align-items: center !important;
+  }
+  #music-player.is-open:not(.is-docked).expand-left .mp-cover {
+    align-self: center !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  #music-player.is-open:not(.is-docked).expand-left .mp-body {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 0 10px 8px !important;
+    align-items: center !important;
+    text-align: center !important;
+  }
+}
+
+
+
+
+
+/* ----- 吸附 Dock：贴边后展开为功能圆球，不再拉宽控制栏 ----- */
+/* ===== Dock mode: snapped to edge → three mini balls on expand ===== */
+#music-player.is-docked {
+  overflow: visible !important;
+}
+
+/* Stay as ball — no full control panel when docked */
+/* 吸附时保持球体尺寸；:hover 仅桌面，移动端只用 .is-open */
+/* 吸附态：无论 is-open / closing，容器永远是球宽 —— 避免按键相对 300px 居中 */
+#music-player.is-docked,
+#music-player.is-docked.is-open,
+#music-player.is-docked.is-dock-closing {
+  width: var(--mp-size) !important;
+  min-width: var(--mp-size) !important;
+  max-width: var(--mp-size) !important;
+  height: var(--mp-size) !important;
+  min-height: var(--mp-size) !important;
+  max-height: var(--mp-size) !important;
+  border-radius: var(--mp-radius) !important;
+  margin-left: 0 !important;
+}
+
+#music-player.is-docked.is-open .mp-body,
+#music-player.is-docked.is-dock-closing .mp-body {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #music-player.is-docked:hover:not(.is-dragging):not(.no-hover-expand) {
+    width: var(--mp-size) !important;
+    height: var(--mp-size) !important;
+    border-radius: var(--mp-radius) !important;
+    margin-left: 0 !important;
+  }
+
+  #music-player.is-docked:hover:not(.is-dragging):not(.no-hover-expand) .mp-body {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+}
+
+#music-player.is-docked .mp-list {
+  display: none !important;
+}
+
+/* Dock 功能球容器：相对封面球向内侧伸出 */
+.mp-dock-btns {
+  position: absolute;
+  top: 50%;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  z-index: 2;
+  transition:
+    opacity 0.28s ease,
+    visibility 0.28s ease,
+    transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Left dock: balls extend to the right (toward center) */
+#music-player.dock-left .mp-dock-btns {
+  left: 100%;
+  margin-left: 10px;
+  transform: translate(8px, -50%);
+  flex-direction: row;
+}
+
+/* Right dock: balls extend to the left */
+#music-player.dock-right .mp-dock-btns {
+  right: 100%;
+  margin-right: 10px;
+  left: auto;
+  transform: translate(-8px, -50%);
+  flex-direction: row-reverse;
+}
+
+#music-player.is-docked.is-open .mp-dock-btns {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translate(0, -50%);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #music-player.is-docked:hover:not(.is-dragging):not(.no-hover-expand) .mp-dock-btns {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: translate(0, -50%);
+  }
+}
+
+/* 单个 Dock 圆球按钮 */
+.mp-dock-btn {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1px solid var(--mp-border);
+  background: var(--mp-bg);
+  backdrop-filter: blur(16px) saturate(160%);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  box-shadow: var(--mp-shadow);
+  color: var(--mp-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  font-size: 14px;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    color 0.2s ease,
+    opacity 0.35s ease;
+  opacity: 0;
+  transform: scale(0.6);
+}
+
+#music-player.is-docked.is-open .mp-dock-btn {
+  opacity: 1;
+  transform: scale(1);
+}
+
+@media (hover: hover) and (pointer: fine) {
+  #music-player.is-docked:hover:not(.is-dragging):not(.no-hover-expand) .mp-dock-btn {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Staggered pop-out */
+#music-player.is-docked.is-open .mp-dock-btn:nth-child(1) {
+  transition-delay: 0.02s;
+}
+@media (hover: hover) and (pointer: fine) {
+  #music-player.is-docked:hover:not(.is-dragging):not(.no-hover-expand) .mp-dock-btn:nth-child(1) {
+    transition-delay: 0.02s;
+  }
+}
+#music-player.is-docked.is-open .mp-dock-btn:nth-child(2) {
+  transition-delay: 0.07s;
+}
+@media (hover: hover) and (pointer: fine) {
+  #music-player.is-docked:hover:not(.is-dragging):not(.no-hover-expand) .mp-dock-btn:nth-child(2) {
+    transition-delay: 0.07s;
+  }
+}
+#music-player.is-docked.is-open .mp-dock-btn:nth-child(3) {
+  transition-delay: 0.12s;
+}
+@media (hover: hover) and (pointer: fine) {
+  #music-player.is-docked:hover:not(.is-dragging):not(.no-hover-expand) .mp-dock-btn:nth-child(3) {
+    transition-delay: 0.12s;
+  }
+}
+
+.mp-dock-btn:hover {
+  transform: scale(1.08) !important;
+  color: var(--mp-accent);
+}
+
+.mp-dock-btn:active {
+  transform: scale(0.94) !important;
+}
+
+.mp-dock-btn.active {
+  color: var(--mp-accent);
+}
+
+.mp-dock-btn i {
+  pointer-events: none;
+}
+
+/* Hide dock buttons when not docked */
+#music-player:not(.is-docked) .mp-dock-btns {
+  display: none !important;
+}
+
+/* 4th dock ball (playlist) stagger */
+#music-player.is-docked.is-open .mp-dock-btn:nth-child(4) {
+  transition-delay: 0.17s;
+}
+@media (hover: hover) and (pointer: fine) {
+  #music-player.is-docked:hover:not(.is-dragging):not(.no-hover-expand) .mp-dock-btn:nth-child(4) {
+    transition-delay: 0.17s;
+  }
+}
+
+/* Keep dock buttons visible while dock list is open */
+#music-player.is-docked.dock-list-open .mp-dock-btns {
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+  transform: translate(0, -50%) !important;
+}
+#music-player.is-docked.dock-list-open .mp-dock-btn {
+  opacity: 1 !important;
+  transform: scale(1) !important;
+}
+
+/* ----- Dock 独立歌单浮层（fixed，JS 计算 left/top） ----- */
+/* 注意：面板挂在 body 上；若在 #music-player 内会因父级 transform 导致 fixed 失效 */
+/* Independent dock playlist floating panel */
+.mp-dock-list {
+  position: fixed;
+  z-index: 100000;
+  width: 280px;
+  max-height: 280px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(-8px) scale(0.96);
+  transform-origin: top left;
+  transition:
+    opacity 0.32s ease,
+    transform 0.35s cubic-bezier(0.25, 0.8, 0.25, 1),
+    visibility 0s linear 0.35s;
+  background: var(--mp-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--mp-border);
+  border-radius: var(--mp-radius-open);
+  box-shadow: var(--mp-shadow);
+  overflow: hidden;
+}
+
+.mp-dock-list.dock-list-up {
+  transform-origin: bottom left;
+  transform: translateY(8px) scale(0.96);
+}
+
+#music-player.dock-right ~ .mp-dock-list,
+/* panel is inside #music-player */
+#music-player.dock-right .mp-dock-list {
+  transform-origin: top right;
+}
+#music-player.dock-right .mp-dock-list.dock-list-up {
+  transform-origin: bottom right;
+}
+
+.mp-dock-list.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0) scale(1);
+  transition:
+    opacity 0.28s ease,
+    transform 0.32s cubic-bezier(0.25, 0.8, 0.25, 1),
+    visibility 0s linear 0s;
+}
+
+.mp-dock-list-inner {
+  max-height: inherit;
+  overflow-y: auto;
+  padding: 6px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.mp-dock-list-inner::-webkit-scrollbar {
+  width: 4px;
+}
+.mp-dock-list-inner::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+[data-theme="dark"] .mp-dock-list {
+  background: rgba(30, 30, 30, 0.55);
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Hide dock list panel when not in dock-list-open */
+#music-player:not(.dock-list-open) .mp-dock-list {
+  /* still allow exit animation via is-visible removal */
+}
+
+
+
+@media (max-width: 600px) {
+  .mp-dock-btn {
+    width: 40px;
+    height: 40px;
+    font-size: 13px;
+  }
+  #music-player.dock-left .mp-dock-btns {
+    margin-left: 8px;
+    gap: 8px;
+  }
+  #music-player.dock-right .mp-dock-btns {
+    margin-right: 8px;
+    gap: 8px;
+  }
+}
+
+
+/* Body layout */
+.mp-main {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: var(--mp-size);
+  position: relative;
+}
+
+.mp-cover {
+  width: 54px;
+  height: 54px;
+  flex-shrink: 0;
+  margin: 6px;
+  border-radius: 50%;
+  background-size: cover;
+  background-position: center;
+  background-color: rgba(0, 0, 0, 0.08);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+  cursor: grab;
+  position: relative;
+  overflow: hidden;
+  transition: box-shadow 0.25s ease, transform 0.2s ease;
+}
+
+.mp-cover::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.15);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+}
+
+/* 动画始终挂载，暂停停在当前角度 */
+.mp-cover {
+  animation: mp-spin 12s linear infinite;
+  animation-play-state: paused;
+}
+#music-player.is-playing:not(.is-dragging) .mp-cover {
+  animation-play-state: running;
+}
+#music-player.is-dragging .mp-cover {
+  animation-play-state: paused;
+}
+
+@keyframes mp-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.mp-cover-play {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.35);
+  border-radius: 50%;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+  pointer-events: none;
+  color: #fff;
+  font-size: 18px;
+}
+
+#music-player:not(.is-playing) .mp-cover:hover .mp-cover-play,
+#music-player.is-mobile:not(.is-playing) .mp-cover .mp-cover-play {
+  opacity: 1;
+}
+
+.mp-body {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 14px 0 4px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.mp-meta {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 4px;
+  overflow: hidden;
+}
+
+.mp-title {
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--mp-text);
+}
+
+.mp-artist {
+  font-size: 11px;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--mp-text-sub);
+}
+
+.mp-controller {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  width: 100%;
+}
+
+.mp-progress-wrap {
+  flex: 1;
+  height: 16px;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  position: relative;
+}
+
+.mp-progress-bar {
+  width: 100%;
+  height: 3px;
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 2px;
+  position: relative;
+  overflow: hidden;
+}
+
+[data-theme="dark"] .mp-progress-bar {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.mp-progress-played {
+  height: 100%;
+  width: 0%;
+  background: var(--mp-accent);
+  border-radius: 2px;
+  transition: width 0.1s linear;
+}
+
+.mp-time {
+  font-size: 10px;
+  color: var(--mp-text-sub);
+  min-width: 70px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.mp-btns {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  margin-left: 2px;
+}
+
+/* 控制栏小按钮 */
+.mp-btn {
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--mp-text);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.15s ease, color 0.15s ease, transform 0.15s ease;
+  padding: 0;
+  outline: none;
+}
+
+.mp-btn:hover {
+  background: rgba(0, 0, 0, 0.08);
+  color: var(--mp-accent);
+}
+
+[data-theme="dark"] .mp-btn:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.mp-btn:active {
+  transform: scale(0.92);
+}
+
+.mp-btn.active {
+  color: var(--mp-accent);
+}
+
+.mp-btn i {
+  pointer-events: none;
+}
+
+/* Playlist panel — absolute, extends from control bar, does not move bar */
+.mp-list {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 100%;
+  max-height: 0;
+  opacity: 0;
+  visibility: hidden;
+  overflow: hidden;
+  pointer-events: none;
+  transform: translateY(-12px);
+  transform-origin: top center;
+  transition:
+    max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    opacity 0.35s ease,
+    transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    visibility 0s linear 0.4s;
+  background: var(--mp-bg);
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  border: 1px solid var(--mp-border);
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: 0 0 var(--mp-radius-open) var(--mp-radius-open);
+  box-shadow: var(--mp-shadow);
+  z-index: 1;
+}
+
+/* 普通歌单打开态 */
+#music-player.is-list-open .mp-list {
+  max-height: var(--mp-list-h);
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+  transition:
+    max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    opacity 0.3s ease,
+    transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    visibility 0s linear 0s;
+}
+
+/* While closing, keep visible so height/opacity can animate */
+/* 普通歌单关闭动画态 */
+#music-player.is-list-closing .mp-list {
+  max-height: 0;
+  opacity: 0;
+  visibility: visible;
+  pointer-events: none;
+  transform: translateY(-12px);
+  transition:
+    max-height 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    opacity 0.35s ease,
+    transform 0.4s cubic-bezier(0.25, 0.8, 0.25, 1),
+    visibility 0s linear 0.4s;
+}
+
+/* List expands upward when space below is insufficient */
+#music-player.list-up .mp-list {
+  top: auto;
+  bottom: 100%;
+  transform: translateY(12px);
+  transform-origin: bottom center;
+  border-top: 1px solid var(--mp-border);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  border-radius: var(--mp-radius-open) var(--mp-radius-open) 0 0;
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.15);
+}
+
+#music-player.list-up.is-list-open .mp-list {
+  transform: translateY(0);
+}
+
+#music-player.list-up.is-list-closing .mp-list {
+  transform: translateY(12px);
+}
+
+[data-theme="dark"] .mp-list {
+  border-color: var(--mp-border);
+}
+
+[data-theme="dark"] #music-player.list-up .mp-list {
+  box-shadow: 0 -8px 32px rgba(0, 0, 0, 0.35);
+}
+
+.mp-list-inner {
+  max-height: var(--mp-list-h);
+  overflow-y: auto;
+  padding: 6px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+
+.mp-list-inner::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mp-list-inner::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 2px;
+}
+
+[data-theme="dark"] .mp-list-inner::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* 歌单行 */
+.mp-list-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  font-size: 12px;
+}
+
+.mp-list-item:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+[data-theme="dark"] .mp-list-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.mp-list-item.active {
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--mp-accent);
+}
+
+.mp-list-item .mp-list-index {
+  width: 18px;
+  text-align: center;
+  font-size: 11px;
+  color: var(--mp-text-sub);
+  flex-shrink: 0;
+}
+
+.mp-list-item.active .mp-list-index {
+  color: var(--mp-accent);
+}
+
+.mp-list-item .mp-list-info {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+}
+
+.mp-list-item .mp-list-name {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-weight: 500;
+}
+
+.mp-list-item .mp-list-artist {
+  font-size: 10px;
+  color: var(--mp-text-sub);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Loading / empty */
+.mp-loading,
+.mp-empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  font-size: 12px;
+  color: var(--mp-text-sub);
+  gap: 8px;
+}
+
+.mp-loading i {
+  animation: mp-spin 1s linear infinite;
+}
+
+/* Volume popup (optional simple) */
+.mp-volume-wrap {
+  position: relative;
+}
+
+/* Mobile / narrow screen adjustments — no hover expand, only .is-open */
+/* Mobile open: lighter animation (avoid jank) */
+
+/* Mobile open: lighter animation (avoid jank) */
+@media (max-width: 600px) {
+  #music-player {
+    transition:
+      width 0.22s ease,
+      height 0.22s ease,
+      border-radius 0.2s ease,
+      box-shadow 0.2s ease !important;
+  }
+  #music-player .mp-body {
+    transition: opacity 0.18s ease, visibility 0.18s ease !important;
+  }
+  #music-player.is-open:not(.is-docked) {
+    backdrop-filter: blur(10px) saturate(140%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(140%) !important;
+  }
+  #music-player.is-open:not(.is-docked) .mp-main,
+  #music-player.is-open:not(.is-docked) .mp-cover {
+    transition: transform 0.22s ease !important;
+  }
+}
+
+@media (max-width: 600px) {
+  :root {
+    --mp-size: var(--mp-size-sm);
+    --mp-radius: 26px;
+    --mp-width-open: min(72vw, 260px);
+    --mp-list-h: 240px;
+  }
+
+  #music-player {
+    left: 16px !important;
+    bottom: 16px !important;
+    max-width: 320px;
+  }
+
+  /* Kill hover expand on narrow screens even if device reports hover */
+  #music-player:hover:not(.is-open) {
+    width: var(--mp-size) !important;
+    border-radius: var(--mp-radius) !important;
+  }
+
+  #music-player:hover:not(.is-open) .mp-body {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  #music-player.is-open:not(.is-docked) {
+    width: min(var(--mp-width-open), 320px) !important;
+    border-radius: 14px !important;
+  }
+
+  #music-player.is-list-open {
+    height: calc(var(--mp-size) + var(--mp-list-h)) !important;
+  }
+
+  .mp-cover {
+    width: 44px;
+    height: 44px;
+    margin: 4px;
+  }
+
+  .mp-body {
+    padding: 0 10px 0 2px;
+  }
+
+  .mp-title {
+    font-size: 12px;
+  }
+
+  .mp-artist {
+    font-size: 10px;
+  }
+
+  .mp-btn {
+    width: 26px;
+    height: 26px;
+    font-size: 12px;
+  }
+
+  .mp-time {
+    min-width: 62px;
+    font-size: 9px;
+  }
+}
+
+/* Prevent text selection globally on player */
+#music-player,
+#music-player * {
+  -webkit-user-drag: none;
+}
+/* =============================================================================
+ * Mobile Upgrade (Overrides) - V2 修复版
+ * ============================================================================= */
+
+/* 1. 隐藏电脑端 (大于600px) 的 Dock 播放/暂停按钮 */
+@media (min-width: 601px) {
+  #mp-dock-play {
+    display: none !important;
+  }
+}
+
+@media (max-width: 600px) {
+  /* --- 2. 移动端独立播放器布局 (限定在非吸附状态下才展开大卡片，修复封面飞出) --- */
+  /* 移动端卡片：宽高随视口百分比缩放，避免模拟器里过大 */
+  #music-player.is-open:not(.is-docked) {
+    width: min(72vw, 260px) !important;
+    max-width: min(72vw, 260px) !important;
+    height: auto !important;
+    min-height: 0 !important;
+    max-height: min(34vh, 210px) !important;
+    border-radius: 14px !important;
+    overflow: visible !important;
+    will-change: transform, width, height;
+  }
+
+  #music-player.is-open:not(.is-docked) .mp-main {
+    flex-direction: column !important;
+    padding: 8px 10px 10px !important;
+    height: auto !important;
+    max-height: inherit;
+    justify-content: flex-start !important;
+    gap: 4px;
+    overflow: visible !important;
+  }
+
+  #music-player.is-open:not(.is-docked) .mp-cover {
+    width: clamp(36px, 10vw, 48px) !important;
+    height: clamp(36px, 10vw, 48px) !important;
+    margin: 0 auto 2px auto !important;
+    border-radius: 12px !important;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.14);
+    flex-shrink: 0;
+  }
+
+  #music-player.is-open:not(.is-docked) .mp-cover-play { display: none !important; }
+
+  #music-player.is-open:not(.is-docked) .mp-body {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    padding: 0 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    overflow: visible !important;
+  }
+
+  #music-player.is-open:not(.is-docked) .mp-meta {
+    align-items: center;
+    margin-bottom: 16px;
+    width: 100%;
+  }
+
+  #music-player.is-open:not(.is-docked) .mp-title { font-size: 15px; font-weight: 700; }
+  #music-player.is-open:not(.is-docked) .mp-artist { font-size: 12px; margin-top: 4px; }
+
+  #music-player.is-open:not(.is-docked) .mp-controller {
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+  }
+
+  #music-player.is-open:not(.is-docked) .mp-progress-wrap { width: 100%; }
+
+  #music-player.is-open:not(.is-docked) .mp-time {
+    align-self: flex-end;
+    margin-top: -6px;
+    font-size: 10px;
+  }
+
+  #music-player.is-open:not(.is-docked) .mp-btns {
+    display: flex !important;
+    width: 100% !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+    padding: 2px 0 0 !important;
+    margin: 0 !important;
+    flex-shrink: 0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    overflow: visible !important;
+  }
+
+  #music-player.is-open:not(.is-docked) .mp-btn {
+    display: flex !important;
+    width: 34px !important;
+    height: 34px !important;
+    font-size: 14px !important;
+    flex-shrink: 0 !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+
+  #music-player.is-open:not(.is-docked) .mp-btn#mp-play {
+    width: 40px !important;
+    height: 40px !important;
+    font-size: 16px !important;
+    background: var(--mp-accent);
+    color: #fff;
+    box-shadow: 0 4px 10px rgba(59, 130, 246, 0.35);
+  }
+
+
+  #music-player.is-open:not(.is-docked):not(.expand-left) {
+    margin-left: 0 !important;
+  }
+
+  /* --- 3. 移动端 Bottom Sheet 歌单抽屉 --- */
+  .mp-dock-list {
+    position: fixed !important;
+    left: 0 !important;
+    top: auto !important;
+    bottom: 0 !important;
+    width: 100vw !important;
+    height: 50vh !important;
+    max-height: 50vh !important;
+    transform: translateY(100%) !important;
+    transform-origin: center bottom !important;
+    border-radius: 24px 24px 0 0 !important;
+    border: none !important;
+    border-top: 1px solid var(--mp-border) !important;
+    box-shadow: 0 -8px 24px rgba(0,0,0,0.1) !important;
+    padding-bottom: env(safe-area-inset-bottom);
+    transition: transform 0.35s cubic-bezier(0.33, 1, 0.68, 1), opacity 0.35s ease, visibility 0s linear 0.35s !important;
+  }
+
+  .mp-dock-list.is-visible {
+    transform: translateY(0) !important;
+    transition: transform 0.35s cubic-bezier(0.33, 1, 0.68, 1), opacity 0.35s ease, visibility 0s linear 0s !important;
+  }
+
+  .mp-dock-list::before {
+    content: '';
+    display: block;
+    width: 40px;
+    height: 4px;
+    background: rgba(0,0,0,0.15);
+    border-radius: 2px;
+    margin: 10px auto;
+  }
+
+  [data-theme="dark"] .mp-dock-list::before { background: rgba(255,255,255,0.2); }
+
+  .mp-dock-list-inner {
+    height: calc(100% - 24px);
+    max-height: 100%;
+    padding: 0 8px 12px 8px;
+  }
+  .mp-list-item { padding: 12px 14px; border-radius: 8px; }
+
+
+  /* 移动端吸附：强制球宽，覆盖一切 is-open 宽度规则 */
+  #music-player.is-docked,
+  #music-player.is-docked.is-open,
+  #music-player.is-docked.is-dock-closing {
+    width: var(--mp-size) !important;
+    min-width: var(--mp-size) !important;
+    max-width: var(--mp-size) !important;
+    height: var(--mp-size) !important;
+    margin-left: 0 !important;
+  }
+
+  /* --- 4. 移动端 Dock 纵向排列 --- */
+  #music-player.dock-left .mp-dock-btns,
+  #music-player.dock-right .mp-dock-btns {
+    flex-direction: column-reverse;
+    bottom: 100%;
+    top: auto;
+    left: 50%;
+    right: auto;
+    margin: 0 0 12px 0;
+    transform: translate(-50%, 0) scale(0.88);
+    transition: opacity 0.28s ease, visibility 0.28s ease, transform 0.28s ease;
+  }
+
+  #music-player.is-docked.is-open .mp-dock-btns,
+  #music-player.is-docked.dock-list-open .mp-dock-btns {
+    transform: translate(-50%, 0) scale(1) !important;
+  }
+
+  #music-player.is-docked.is-dock-closing .mp-dock-btns {
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: translate(-50%, 0) scale(0.92) !important;
+  }
+  #music-player.is-docked.is-dock-closing .mp-dock-btn {
+    opacity: 0 !important;
+    transform: scale(1) !important;
+  }
+
+  #music-player.dock-down.dock-left .mp-dock-btns,
+  #music-player.dock-down.dock-right .mp-dock-btns {
+    flex-direction: column !important;
+    top: 100% !important;
+    bottom: auto !important;
+    margin: 12px 0 0 0 !important;
+  }
+}

@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://ykpgp0928.dpdns.org/sitemap.xml

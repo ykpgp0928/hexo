@@ -1,0 +1,108 @@
+/* 整体容器 */
+.card-clock #custom-clock {
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    animation: fadeIn 0.8s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.clock-date {
+    font-size: 13px;
+    opacity: 0.7;
+    margin-bottom: 6px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.clock-time {
+    font-size: 44px; /* 略微放大一点点增强视觉中心 */
+    font-family: "Courier New", Consolas, monospace;
+    font-weight: 900;
+    margin-bottom: 10px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    /* ✨ 轻微的弥散阴影，让时间更有立体发光感，颜色自动适配主题的文字颜色 */
+    text-shadow: 0 4px 12px rgba(var(--font-color), 0.15);
+}
+
+.clock-colon {
+    display: inline-block;
+    width: 20px;
+    text-align: center;
+    animation: breathe 2s ease-in-out infinite;
+    position: relative;
+    top: -2px;
+}
+
+@keyframes breathe {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0; }
+}
+
+.clock-greeting {
+    font-size: 14px;
+    font-weight: bold;
+    margin-bottom: 10px; /* 增加了一点下边距 */
+    color: var(--font-color);
+}
+
+/* 交互增强：天气胶囊 */
+.clock-weather {
+    font-size: 13px;
+    opacity: 0.85;
+    background: var(--btn-bg);
+    color: var(--btn-color);
+    padding: 5px 14px;
+    border-radius: 20px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    /* 增加背景色和发光效果的平滑过渡 */
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    cursor: pointer;
+    user-select: none;
+}
+
+.clock-weather:hover {
+    opacity: 1; /* 鼠标悬停时完全不透明，文字更清晰 */
+    transform: translateY(-2px) scale(1.03); /* 保持优雅的上浮+微放大 */
+
+    /* 💡 核心修复：不修改 background 和 color */
+    /* 改变阴影，利用色彩发光感突出悬浮效果，同时用 filter 稍微提升整体亮度 */
+    filter: brightness(1.08);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+}
+
+/* 刷新时的旋转动画 */
+.spin-icon {
+    display: inline-block;
+    animation: spin 1s linear infinite;
+}
+@keyframes spin {
+    100% { transform: rotate(360deg); }
+}
+
+/* 数据可视化：今日进度条 */
+.clock-progress-bar {
+    width: 85%; /* 进度条宽度 */
+    height: 4px; /* 极其纤细精致 */
+    background: rgba(128, 128, 128, 0.15); /* 底部轨道颜色 */
+    border-radius: 2px;
+    margin-top: 14px; /* 与天气胶囊拉开距离 */
+    overflow: hidden;
+}
+
+.clock-progress-inner {
+    height: 100%;
+    /* 使用了 Hexo Butterfly 的主题色变量，这样进度条能和你的博客主色调完美一致！ */
+    background: var(--theme-color, #4CAF50);
+    border-radius: 2px;
+    transition: width 1s linear; /* 每秒平滑移动 */
+}
