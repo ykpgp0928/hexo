@@ -41,8 +41,7 @@ __modules["src/interaction/Gesture.js"] = function (__mod, __require) {
 /**
  * @param {GestureConfig} config
  * @param {GestureHandlers} handlers
- */
-function createGesture(config, handlers) {
+ */function createGesture(config, handlers) {
   const longPressMs = config.longPressMs != null ? config.longPressMs : 550;
   const clickThreshold = config.clickThreshold != null ? config.clickThreshold : 8;
   const longPressTapMax =
@@ -256,8 +255,7 @@ __modules["src/interaction/Drag.js"] = function (__mod, __require) {
 
 /**
  * @param {DragContext} ctx
- */
-function createDrag(ctx) {
+ */function createDrag(ctx) {
   let originX = 0;
   let originY = 0;
   let active = false;
@@ -360,8 +358,7 @@ __modules["src/interaction/Snap.js"] = function (__mod, __require) {
 /**
  * @param {SnapConfig} config
  * @param {SnapContext} ctx
- */
-function createSnap(config, ctx) {
+ */function createSnap(config, ctx) {
   let magnetSide = null; // "left" | "right" | null
 
   function getBallSize() {
@@ -577,8 +574,7 @@ __modules["src/interaction/Dock.js"] = function (__mod, __require) {
 
 /**
  * @param {DockHandlers} [handlers]
- */
-function createDock(handlers) {
+ */function createDock(handlers) {
   const h = handlers || {};
   /** @type {DockState} */
   let state = {
@@ -711,8 +707,7 @@ __modules["src/interaction/ExpandPolicy.js"] = function (__mod, __require) {
  * Free / panel open direction.
  * @param {ExpandInput} input
  * @returns {{ expandLeft: boolean, expandDown: boolean }}
- */
-function resolveExpandDirection(input) {
+ */function resolveExpandDirection(input) {
   const pad = input.pad != null ? input.pad : 12;
   const vw = input.viewportW;
   const vh = input.viewportH;
@@ -744,8 +739,7 @@ function resolveExpandDirection(input) {
  * Dock 功能球纵向：上方不够堆叠高度且下方更宽裕 → 向下排。
  * @param {{ absTop: number, absBottom: number, stackH: number, viewportH: number, pad?: number }} input
  * @returns {{ dockDown: boolean }}
- */
-function resolveDockStackDirection(input) {
+ */function resolveDockStackDirection(input) {
   const pad = input.pad != null ? input.pad : 8;
   const spaceAbove = input.absTop;
   const spaceBelow = input.viewportH - input.absBottom;
@@ -763,8 +757,7 @@ function resolveDockStackDirection(input) {
  * @param {boolean} expandDown
  * @param {number} ballH
  * @param {number} openH
- */
-function expandDownTranslateY(isOpen, expandDown, ballH, openH) {
+ */function expandDownTranslateY(isOpen, expandDown, ballH, openH) {
   if (isOpen && expandDown) return openH - ballH;
   return 0;
 }
@@ -786,7 +779,6 @@ var resolveDockStackDirection = __dep0.resolveDockStackDirection;
  * Owns: PANEL expand direction (via ExpandPolicy), mobile card geometry,
  * list-up, dock-down. Does NOT: pointer stream.
  */
-
 /**
  * @typedef {Object} LayoutContext
  * @property {() => HTMLElement | null} getRoot
@@ -807,8 +799,7 @@ var resolveDockStackDirection = __dep0.resolveDockStackDirection;
 
 /**
  * @param {LayoutContext} ctx
- */
-function createLayout(ctx) {
+ */function createLayout(ctx) {
   let expandLeft = false;
   let expandDown = false;
   let listUp = false;
@@ -1053,8 +1044,7 @@ __modules["src/media/AudioEngine.js"] = function (__mod, __require) {
 
 /**
  * @param {AudioEngineHandlers} [handlers]
- */
-function createAudioEngine(handlers) {
+ */function createAudioEngine(handlers) {
   const h = handlers || {};
   /** @type {HTMLAudioElement | null} */
   let el = null;
@@ -1196,8 +1186,7 @@ __modules["src/core/LifecycleScope.js"] = function (__mod, __require) {
  *   dispose: (emitError?: (err: unknown) => void) => Promise<void>,
  *   disposed: boolean
  * }}
- */
-function createLifecycleScope() {
+ */function createLifecycleScope() {
   let disposed = false;
   /** @type {Set<() => void | Promise<void>>} */
   const cleanups = new Set();
@@ -1275,13 +1264,6 @@ var createLifecycleScope = __dep6.createLifecycleScope;
 /**
  * FWF Music Player Host（模块源码，请用 npm run build 打包后再给 Hexo 使用）
  */
-
-
-
-
-
-
-
 const _userCfg = (typeof window !== "undefined" && window.FWF_MUSIC) ? window.FWF_MUSIC : {};
 const CONFIG = {
     server: _userCfg.server || "netease",
@@ -1719,17 +1701,20 @@ const CONFIG = {
   // [Music Widget:PlaylistSource] Meting fetch (parity with src/widgets/music/PlaylistSource.js)
   function buildApiUrl(template) { return template.replace(":server", CONFIG.server).replace(":type", CONFIG.type).replace(":id", CONFIG.id).replace(":r", String(Math.random())); }
 
-  async function fetchPlaylist() {
+  async function fetchPlaylist(signal) {
     let lastErr = null;
     for (const api of CONFIG.apis) {
       try {
-        const res = await fetch(buildApiUrl(api), { mode: "cors" });
+        const res = await fetch(buildApiUrl(api), { mode: "cors", signal });
         if (!res.ok) throw new Error("HTTP " + res.status);
         const data = await res.json();
         if (Array.isArray(data) && data.length > 0) {
           return data.map((item, i) => ({ name: item.name || item.title || "Unknown", artist: item.artist || item.author || "Unknown", url: item.url, pic: item.pic || item.cover || "", lrc: item.lrc || "", index: i }));
         }
-      } catch (e) { lastErr = e; }
+      } catch (e) {
+        if (e && e.name === "AbortError") throw e;
+        lastErr = e;
+      }
     }
     throw lastErr || new Error("All Meting APIs failed");
   }
@@ -2563,42 +2548,70 @@ const CONFIG = {
   }
 
 
-  function bindEvents() {
-    if (!coverEl) return;
-    coverEl.addEventListener("pointerdown", onCoverPointerDown);
-    // 文档捕获阶段吞掉关闭后的合成 click（比只挡 cover 更稳）
-    if (!window.__mpGhostClickBlocker) {
-      window.__mpGhostClickBlocker = true;
-      document.addEventListener("click", (e) => {
-        var blocked =
-          Date.now() < ignoreBallToggleUntil ||
-          (gesture && Date.now() < gesture.getIgnoreUntil());
-        if (blocked) {
-          e.preventDefault();
-          e.stopPropagation();
-        }
-      }, true);
-    }
-    // 屏蔽 touch 后的合成 click，避免关闭 Dock 后又触发一次打开
-    coverEl.addEventListener("click", (e) => {
+  /**
+   * M1: every listener is NAMED and registered into `lifecycle` so that
+   * destroy() releases it in reverse order. No window.* global flags —
+   * ghost-click blocker state is module-scoped and reset on destroy.
+   */
+  function onDocGhostClick(e) {
+    var blocked =
+      Date.now() < ignoreBallToggleUntil ||
+      (gesture && Date.now() < gesture.getIgnoreUntil());
+    if (blocked) {
       e.preventDefault();
       e.stopPropagation();
-    });
-    root.addEventListener("mouseleave", onPlayerMouseLeave);
-    root.addEventListener("mouseenter", () => {
+    }
+  }
+
+  function onCoverClickGuard(e) {
+    e.preventDefault();
+    e.stopPropagation();
+  }
+
+  function bindEvents() {
+    if (!coverEl || eventsBound) return;
+    eventsBound = true;
+    const lc = lifecycle;
+    const track = (target, type, fn, opts) => {
+      if (!target) return;
+      target.addEventListener(type, fn, opts);
+      lc.add(() => {
+        try { target.removeEventListener(type, fn, opts); } catch (err) {}
+      });
+    };
+
+    track(coverEl, "pointerdown", onCoverPointerDown);
+
+    // 文档捕获阶段吞掉关闭后的合成 click；每轮启动只绑定一次，
+    // destroy 会经 lifecycle 移除并复位 ghostClickBlockerBound。
+    if (!ghostClickBlockerBound) {
+      ghostClickBlockerBound = true;
+      track(document, "click", onDocGhostClick, true);
+    }
+
+    // 屏蔽 touch 后的合成 click，避免关闭 Dock 后又触发一次打开
+    track(coverEl, "click", onCoverClickGuard);
+
+    track(root, "mouseleave", onPlayerMouseLeave);
+    const onRootEnter = () => {
       if (!isMobile) updateExpandDirection();
-    });
+    };
+    track(root, "mouseenter", onRootEnter);
+
     const dockPanel = ensureDockListPanel();
-    dockPanel.addEventListener("mouseleave", (e) => {
+    const onDockLeave = (e) => {
       const related = e.relatedTarget;
-      if (related && ((root && root.contains(related)) || dockPanel.contains(related))) return;
+      if (related && ((root && root.contains(related)) || (dockPanel && dockPanel.contains(related)))) return;
       onPlayerMouseLeave(e);
-    });
+    };
+    track(dockPanel, "mouseleave", onDockLeave);
 
     // Phase 2: prefer Template refs; fall back to query for safety
     const r = refs || Template.bindRefs(root);
     const bindEl = (el, fn) => {
-      if (el) el.addEventListener("click", (e) => { e.stopPropagation(); fn(e); });
+      if (!el) return;
+      const handler = (e) => { e.stopPropagation(); fn(e); };
+      track(el, "click", handler);
     };
 
     bindEl(r.playBtn, () => togglePlay());
@@ -2612,12 +2625,12 @@ const CONFIG = {
     bindEl(r.dockLoop, () => toggleLoop());
     bindEl(r.dockListBtn, () => toggleDockList());
 
-    if (r.progress) {
-      r.progress.addEventListener("click", (e) => {
-        e.stopPropagation();
-        var pr = r.progress.getBoundingClientRect(); seek((e.clientX - pr.left) / (pr.width || 1));
-      });
-    }
+    const onProgressClick = (e) => {
+      e.stopPropagation();
+      var pr = r.progress.getBoundingClientRect();
+      seek((e.clientX - pr.left) / (pr.width || 1));
+    };
+    track(r.progress, "click", onProgressClick);
 
     const onListItemClick = (e) => {
       const item = e.target.closest(".mp-list-item"); if (!item) return;
@@ -2625,34 +2638,38 @@ const CONFIG = {
       loadSong(idx, true);
       if (isDockListOpen && isMobile) closeDockList();
     };
-    if (r.listInner) r.listInner.addEventListener("click", onListItemClick);
-    if (r.dockListInner) r.dockListInner.addEventListener("click", onListItemClick);
+    track(r.listInner, "click", onListItemClick);
+    track(r.dockListInner, "click", onListItemClick);
 
-    document.addEventListener("pointerdown", (e) => {
+    const onOutsideDockList = (e) => {
       if (!isDockListOpen) return;
       const panel = r.dockSheet;
       const dockBtn = r.dockListBtn;
       if ((panel && panel.contains(e.target)) || (dockBtn && dockBtn.contains(e.target)) || (root && root.contains(e.target))) return;
       closeDockList();
-    }, { passive: true });
+    };
+    track(document, "pointerdown", onOutsideDockList, { passive: true });
 
-    document.addEventListener("pointerdown", (e) => {
+    const onOutsideCollapse = (e) => {
       if (!isMobile || (!isOpen && !isListOpen)) return;
       if (root && !root.contains(e.target)) {
         const dockList = r.dockSheet;
         if (dockList && dockList.contains(e.target)) return;
         collapseToBall();
       }
-    }, { passive: true });
+    };
+    track(document, "pointerdown", onOutsideCollapse, { passive: true });
 
-    window.addEventListener("resize", () => {
+    const onWindowResize = () => {
       // 当发生旋转等行为时重新更新 mobile 标志
       isMobile = window.innerWidth <= 600;
       const [nx, ny] = clampPosition(posX, posY);
       posX = nx; posY = ny; applyTransform(); syncDockFromPosition(); if (isDockListOpen) positionDockList();
       shellSync();
-    });
-    window.addEventListener("beforeunload", persistNow);
+    };
+    track(window, "resize", onWindowResize);
+
+    track(window, "beforeunload", onBeforeUnload);
   }
 
   let initialized = false, eventsBound = false;
@@ -2660,6 +2677,13 @@ const CONFIG = {
   let bodyObserver = null;
   let ownedPortals = [];
   let onPjaxComplete = null;
+  // M1: module-scoped boot/revival guards (no window.* globals)
+  let bootTimer = null;
+  let alive = false;
+  let ghostClickBlockerBound = false;
+  /** @type {AbortController | null} M4: cancels in-flight playlist fetch on destroy */
+  let fetchController = null;
+  function onBeforeUnload() { persistNow(); }
   function claimOwnedPortal(el) {
     if (el && ownedPortals.indexOf(el) < 0) ownedPortals.push(el);
   }
@@ -2692,6 +2716,7 @@ const CONFIG = {
     if (root.classList && root.classList.contains("orbit-hidden")) return;
     root.style.cssText += ";display:block;visibility:visible;opacity:1;pointer-events:auto;z-index:99999;";
     const fix = () => {
+      if (!root) return; // M1: never touch a destroyed root
       const before = { x: posX, y: posY }, [nx, ny] = clampPosition(posX, posY);
       posX = nx; posY = ny; applyTransform();
       if (Math.abs(before.x - nx) > 2 || Math.abs(before.y - ny) > 2) persistNow();
@@ -2703,7 +2728,10 @@ const CONFIG = {
   }
 
   async function init() {
-    if (!document.body) return setTimeout(init, 50);
+    if (!document.body) {
+      bootTimer = setTimeout(init, 50); // M1: cancellable via destroy()
+      return;
+    }
     if (!lifecycle || lifecycle.disposed) {
       lifecycle = createLifecycleScope();
     }
@@ -2712,6 +2740,7 @@ const CONFIG = {
     // Phase 2: mount shell via Template
     const mounted = Template.mount(document.body);
     root = mounted.root;
+    alive = true; // M1: revival guards (pjax / observer) may act again
     cacheDOMRefs();
     if (!coverEl) return;
     shellSync(); // Phase 1: initial class projection
@@ -2729,15 +2758,31 @@ const CONFIG = {
     initialized = true;
 
     try {
-      playlist = await fetchPlaylist(); renderList();
+      fetchController = new AbortController();
+      playlist = await fetchPlaylist(fetchController.signal);
+      if (!alive) return; // M4 fix: destroyed while fetching — never revive
+      renderList();
       const s = getState();
       if (s.index != null && s.index < playlist.length) currentIndex = s.index;
       loadSong(currentIndex, false);
       if (s.time && audio) {
-        const seekTo = () => { if (audio.readyState >= 1) { audio.currentTime = s.time; updateProgress(); audio.removeEventListener("loadedmetadata", seekTo); } };
-        audio.addEventListener("loadedmetadata", seekTo);
+        // M1: named handler, registered in lifecycle, removed on destroy
+        const onLoadedMetaSeek = () => {
+          if (audio && audio.readyState >= 1) {
+            try { audio.currentTime = s.time; } catch (err) {}
+            updateProgress();
+            try { audio.removeEventListener("loadedmetadata", onLoadedMetaSeek); } catch (err) {}
+          }
+        };
+        audio.addEventListener("loadedmetadata", onLoadedMetaSeek);
+        if (lifecycle) {
+          lifecycle.add(() => {
+            try { if (audio) audio.removeEventListener("loadedmetadata", onLoadedMetaSeek); } catch (err) {}
+          });
+        }
       }
     } catch (err) {
+      if (!alive) return; // M4 fix: aborted by destroy — do not touch DOM
       if (titleEl) titleEl.textContent = "加载失败"; if (artistEl) artistEl.textContent = "请检查网络或 API";
       if (listInner) listInner.innerHTML = '<div class="mp-empty">歌单加载失败</div>';
     }
@@ -2747,6 +2792,7 @@ const CONFIG = {
       bodyObserver = null;
     }
     bodyObserver = new MutationObserver(() => {
+      if (!alive) return; // M1: destroyed — never revive
       if (lifecycle && lifecycle.disposed) return;
       const existing = document.getElementById("music-player");
       if (!existing || !document.body.contains(existing)) {
@@ -2763,6 +2809,7 @@ const CONFIG = {
     if (!onPjaxComplete) {
       onPjaxComplete = function () {
         setTimeout(function () {
+          if (!alive) return; // M1: destroyed — never revive
           if (!document.getElementById("music-player")) {
             initialized = false;
             eventsBound = false;
@@ -2775,10 +2822,48 @@ const CONFIG = {
   }
 
   /**
-   * Phase 3 — destroy (idempotent). Cleans audio, observer, owned portals, root.
+   * Phase 3 + M1 — destroy (idempotent). Cleans audio, observer, owned portals,
+   * root, ALL lifecycle-registered listeners (reverse order), pending timers /
+   * rAF / gesture state, and module-scoped flags. No detached-root revival.
    * Does not remove foreign #mp-dock-list nodes we did not create.
    */
   function destroyMusicPlayer() {
+    alive = false;
+    if (bootTimer) { clearTimeout(bootTimer); bootTimer = null; }
+    if (moveRaf) { cancelAnimationFrame(moveRaf); moveRaf = 0; }
+    pendingMove = null;
+    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+    ignoreBallToggleUntil = 0;
+    ghostClickBlockerBound = false;
+
+    // M4 fix: cancel in-flight playlist fetch so its resolution can never
+    // render/load audio into a destroyed instance.
+    if (fetchController) {
+      try { fetchController.abort(); } catch (e) {}
+      fetchController = null;
+    }
+
+    // M4 fix: terminate any active pointer session (drag-in-flight destroy)
+    // so document-level listeners and pointer capture are released.
+    try {
+      if (gesture) {
+        const pid = gesture.getActivePointer();
+        if (pid != null && coverEl) {
+          try {
+            if (coverEl.hasPointerCapture && coverEl.hasPointerCapture(pid)) {
+              coverEl.releasePointerCapture(pid);
+            }
+          } catch (err) {}
+        }
+        gesture.cancel();
+      }
+    } catch (e) {}
+    try {
+      document.removeEventListener("pointermove", onDocPointerMove);
+      document.removeEventListener("pointerup", onDocPointerUp);
+      document.removeEventListener("pointercancel", onDocPointerUp);
+    } catch (e) {}
+
     try {
       if (musicEngine && typeof musicEngine.destroy === "function") musicEngine.destroy();
     } catch (e) {}
@@ -2813,6 +2898,27 @@ const CONFIG = {
     root = null;
     coverEl = null;
     refs = null;
+
+    // M1: reset lazy singletons + shell/gesture residue so remount starts clean
+    snap = null;
+    dockCtl = null;
+    layoutCtl = null;
+    gesture = null;
+    drag = null;
+    magnetSide = null;
+    lastDockSide = null;
+    dockAnchorX = null;
+    dockAnchorY = null;
+    shellSnapping = false;
+    shellDockClosing = false;
+    shellNoHoverExpand = false;
+    shellExpandLeft = false;
+    shellListClosing = false;
+    shellListUp = false;
+    shellDockDown = false;
+    shellMagnet = false;
+    shellMagnetSide = null;
+
     initialized = false;
     eventsBound = false;
     isOpen = false;
@@ -2821,8 +2927,7 @@ const CONFIG = {
     playlist = [];
   }
 
-/** 启动播放器（打包后会自动调用） */
-function startMusicPlayer() {
+/** 启动播放器（打包后会自动调用） */function startMusicPlayer() {
   boot();
   if (typeof window !== "undefined") {
     window.__FWF_MUSIC_API__ = {
@@ -2830,16 +2935,62 @@ function startMusicPlayer() {
       destroy: destroyMusicPlayer,
     };
   }
-}
-function destroyMusicPlayerExport() {
+}function destroyMusicPlayerExport() {
   destroyMusicPlayer();
 }
-__mod.boot = boot;
+
+/**
+ * M3 — Music as a Contract widget definition (MINIMAL adapter layer).
+ * The business shell (shellSync / dock / playlist / audio) stays untouched;
+ * this only wraps start/destroy/portal reporting so the Runtime and Launcher
+ * can drive Music through the same register/mount/destroy/visibility path as
+ * any other Contract widget. Full Contract refactor is v0.5 scope.
+ */const musicWidgetDefinition = {
+  id: "music",
+  version: "0.4",
+  label: "Music 音乐",
+  capabilities: {
+    launcher: true,
+    portal: true,
+  },
+  mount: function () {
+    startMusicPlayer();
+    // M4 fix: remember the root reference created by this mount so the
+    // Runtime's body-recovery can re-attach it after a PJAX body swap
+    // (a live getElementById() query would return null once detached).
+    const rootRef = document.getElementById("music-player");
+    return {
+      get root() {
+        return document.getElementById("music-player") || rootRef;
+      },
+      portals: function () {
+        const nodes = [];
+        // in-memory claimed portals first — they survive body swaps
+        for (let i = 0; i < ownedPortals.length; i++) {
+          if (ownedPortals[i] && nodes.indexOf(ownedPortals[i]) < 0) {
+            nodes.push(ownedPortals[i]);
+          }
+        }
+        const marked = document.querySelectorAll(
+          '[data-orbit-portal="music-dock-list"]'
+        );
+        for (let i = 0; i < marked.length; i++) {
+          if (nodes.indexOf(marked[i]) < 0) nodes.push(marked[i]);
+        }
+        const sheet = document.getElementById("mp-dock-list");
+        if (sheet && nodes.indexOf(sheet) < 0) nodes.push(sheet);
+        return nodes;
+      },
+      destroy: destroyMusicPlayer,
+    };
+  },
+};__mod.boot = boot;
 __mod.init = init;
 __mod.destroyMusicPlayer = destroyMusicPlayer;
 
 if (typeof startMusicPlayer !== 'undefined') __mod.startMusicPlayer = startMusicPlayer;
 if (typeof destroyMusicPlayerExport !== 'undefined') __mod.destroyMusicPlayerExport = destroyMusicPlayerExport;
+if (typeof musicWidgetDefinition !== 'undefined') __mod.musicWidgetDefinition = musicWidgetDefinition;
 if (typeof boot !== 'undefined') __mod.boot = boot;
 if (typeof init !== 'undefined') __mod.init = init;
 if (typeof destroyMusicPlayer !== 'undefined') __mod.destroyMusicPlayer = destroyMusicPlayer;
@@ -2854,7 +3005,6 @@ var startMusicPlayer = __dep0.startMusicPlayer;
  * 浏览器打包入口（esbuild 会把它和依赖打成一个文件）
  * Hexo 只需引入 dist/floating-widget-music.js
  */
-
 // 允许在引入脚本前设置 window.FWF_MUSIC 覆盖默认歌单
 startMusicPlayer();
 

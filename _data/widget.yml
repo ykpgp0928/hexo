@@ -1,0 +1,9 @@
+top:
+  - class_name: card-clock
+    id_name: custom-clock-card
+    name: 时钟
+    icon: fas fa-clock
+    html: |
+      <div id="custom-clock">
+        Loading...
+      </div>

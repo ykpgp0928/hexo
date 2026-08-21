@@ -1,0 +1,29 @@
+- date: 2026-07-30 10:18:40
+  key: key-1
+  content: |
+    好无聊，没人陪陪我
+  tags:
+    - 心情
+- date: 2026-08-05 20:15:38
+  key: key-2
+  content: |
+    买的书快到了，期待一下
+    ![](https://cdn.ykpgp0928.dpdns.org/shuoshuo-01.png)
+  tags:
+    - 日常
+    - 诗词
+- date: 2026-08-05 22:28:20
+  key: key-3
+  content: |
+    刚买的桃子，挺好吃的
+    ![](https://cdn.ykpgp0928.dpdns.org/shuoshuo-02.jpg)
+  tags:
+    - 日常
+- date: 2026-08-05 23:04:15
+  key: key-4
+  content: |
+    成功解锁phigros魔王曲：姐姐砍我
+    <video src="https://cdn.ykpgp0928.dpdns.org/shuoshuo-03.mp4" controls width="600"></video>
+  tags:
+    - 日常
+    - phigros

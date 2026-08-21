@@ -51,7 +51,6 @@
 .mp-dock-list {
   transition:
     opacity 0.22s ease,
-    transform 0.22s ease,
     visibility 0.22s ease;
 }
 #music-player.orbit-hidden,
@@ -59,7 +58,7 @@
   opacity: 0 !important;
   visibility: hidden !important;
   pointer-events: none !important;
-  transform: scale(0.92) !important;
+  /* no transform — would override translate(pos) and jump to left/bottom */
 }
 #music-player.orbit-hidden-final,
 .mp-dock-list.orbit-hidden-final {
