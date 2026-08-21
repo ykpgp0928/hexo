@@ -1,109 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <search>
   <entry>
-    <title>Orbit-v0.2更新报告</title>
-    <url>/2026/08/15/Orbit-v0-2%E6%9B%B4%E6%96%B0%E6%8A%A5%E5%91%8A/</url>
-    <content><![CDATA[<h1>Orbit v0.2 更新报告</h1>
-<blockquote>
-<p><strong>版本定位：</strong> 从两个独立的悬浮组件成品，升级为拥有统一入口、统一管理面板和统一交互语言的多 Widget 浏览器 Runtime。</p>
-</blockquote>
-<h2 id="发布范围">发布范围</h2>
-<p>本报告以 <code>v0.1.1</code> 发布提交与后续冻结的 <code>v0.2-baseline</code> 为比较边界。仓库没有独立的 <code>v0.2.0</code> Git tag；变更记录将该系列标记为 <code>0.2.0-c</code>，而 <code>v0.2-baseline</code> 用作 v0.3 开发前的冻结快照。因此，本文以 <strong>v0.2 系列能力</strong> 而非某个单一 tag 作为汇报对象。</p>
-<table>
-<thead>
-<tr>
-<th>维度</th>
-<th>v0.1.x</th>
-<th>v0.2 系列</th>
-<th>对用户的意义</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>交付形态</td>
-<td>Music、Clock 可独立接入</td>
-<td>新增 <code>dist/orbit.js</code> 多组件入口</td>
-<td>页面只需选择一种集成方式即可获得统一管理</td>
-</tr>
-<tr>
-<td>组件管理</td>
-<td>无统一面板</td>
-<td>Launcher + <code>Orbit.mount/setVisible/list</code></td>
-<td>用户能集中显示或隐藏组件</td>
-</tr>
-<tr>
-<td>桌面操作</td>
-<td>单个组件的既有交互</td>
-<td>默认 <code>Alt+O</code> 打开管理面板</td>
-<td>可快速进入统一控制入口</td>
-</tr>
-<tr>
-<td>移动操作</td>
-<td>组件自身触控</td>
-<td>长按悬浮球打开 Launcher</td>
-<td>适配没有键盘的触控设备</td>
-</tr>
-<tr>
-<td>文档叙述</td>
-<td>FWF 预览与组件并列</td>
-<td>统一为 Orbit Runtime</td>
-<td>产品模型更清晰</td>
-</tr>
-</tbody>
-</table>
-<h2 id="主要更新">主要更新</h2>
-<h3 id="1-新增-orbit-runtime-与多-widget-发布物">1. 新增 Orbit Runtime 与多 Widget 发布物</h3>
-<p>v0.2 的决定性更新是新增 <code>src/core/Orbit.js</code>、<code>src/core/Launcher.js</code>、<code>src/entry-orbit.js</code> 以及浏览器产物 <code>dist/orbit.js</code>。原先的 Music 与 Clock 不再只作为孤立脚本存在，而可由 Runtime 注册、启动并在 Launcher 中展示。</p>
-<p>对静态站用户而言，推荐接入从“分别引用两个脚本”转变为：引入 Music 与 Clock 的 CSS、写入 <code>window.ORBIT</code> 配置，再引入一个 <code>orbit.js</code>。这降低了多组件接入成本，也为后续增加 Widget 留出了公共入口。</p>
-<h3 id="2-launcher：解决多组件可管理性">2. Launcher：解决多组件可管理性</h3>
-<p>Launcher 为桌面提供 <code>Alt+O</code> 快捷键，为移动端提供“长按球体”入口，并加入首次提示与桌面/移动端差异化脚注。其价值不在于弹出层外观，而在于解决了多组件出现后“谁负责统一管理”的产品问题。</p>
-<p>v0.2 同时补上了两项关键交互修复：一是 Music 的 <code>display:block !important</code> 场景仍可被隐藏；二是移动端长按松手顺序调整为先识别长按、再结束拖拽，从而避免长按被误判为普通点击。这些修复使 Launcher 的基本操作能在真实页面中成立。</p>
-<h3 id="3-交互与布局向共享语言收敛">3. 交互与布局向共享语言收敛</h3>
-<p>新增/调整的 Gesture、Layout、Music CSS 与 Clock Host，使左右吸附、展开方向和移动端卡片边界保持更一致。v0.2 的核心成果并非把所有业务逻辑彻底抽象，而是建立了一个跨 Widget 复用的交互起点：<strong>拖拽、吸附、展开、长按、管理入口</strong> 使用同一组规则。</p>
-<h2 id="验证与发布状态">验证与发布状态</h2>
-<p>v0.2 交付了 demo、<code>test-orbit.html</code>、浏览器 IIFE 产物和 API/配置文档；差异范围约为 40 个文件、11,790 行新增、934 行删除。它实现了多组件 Runtime 的主体能力，但该阶段尚无 v0.3 引入的单元测试、产物校验脚本和 GitHub Actions CI。因此，其质量信号主要来自文档化的阶段验收和手动浏览器测试，而非自动化门禁。</p>
-<h2 id="兼容性与使用影响">兼容性与使用影响</h2>
-<table>
-<thead>
-<tr>
-<th>场景</th>
-<th>建议</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>已使用 Music/Clock 单文件</td>
-<td>可继续使用独立包；不要与 <code>orbit.js</code> 同时引入</td>
-</tr>
-<tr>
-<td>新接入多组件页面</td>
-<td>使用 <code>dist/orbit.js</code>，并保留两份组件 CSS</td>
-</tr>
-<tr>
-<td>桌面用户</td>
-<td>默认使用 <code>Alt+O</code>，可通过 <code>ORBIT.launcherKey</code> 改写</td>
-</tr>
-<tr>
-<td>移动用户</td>
-<td>长按任意球体打开 Launcher；保持手势区域不被页面脚本抢占</td>
-</tr>
-</tbody>
-</table>
-<h2 id="风险与下一步">风险与下一步</h2>
-<p>v0.2 的限制主要是 Runtime 仍以“注册 Host + 直接操作 DOM”为主，隐藏、销毁、重挂载的语义没有充分分离；当 PJAX、动态卸载或多个 portal 出现时，资源生命周期容易变得模糊。Music 与 Clock 的复杂度也存在明显差距，未来不宜一次性大改二者。</p>
-<p>因此，最合理的下一步正是 v0.3 所采取的方向：先用 Clock 试点建立生命周期契约，再让 Music 接入 <code>destroy</code>、可见性目标和 portal 所有权，而不是在 v0.2 阶段继续堆叠视觉功能。</p>
-]]></content>
-      <categories>
-        <category>开发</category>
-        <category>更新</category>
-      </categories>
-      <tags>
-        <tag>开发</tag>
-        <tag>编程</tag>
-        <tag>更新</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Orbit 通向 v1.0 的长期方案：从 Runtime 代码到兼容性网络</title>
     <url>/2026/08/16/2026-08-16-Orbit-%E9%80%9A%E5%90%91-v1.0-%E7%9A%84%E9%95%BF%E6%9C%9F%E6%96%B9%E6%A1%88%EF%BC%9A%E4%BB%8E-Runtime-%E4%BB%A3%E7%A0%81%E5%88%B0%E5%85%BC%E5%AE%B9%E6%80%A7%E7%BD%91%E7%BB%9C/</url>
     <content><![CDATA[<h1>Orbit 通向 v1.0 的长期方案：从 Runtime 代码到兼容性网络</h1>
@@ -582,157 +479,6 @@
       </tags>
   </entry>
   <entry>
-    <title>Orbit-v0.3更新报告</title>
-    <url>/2026/08/15/Orbit-v0-3%E6%9B%B4%E6%96%B0%E6%8A%A5%E5%91%8A/</url>
-    <content><![CDATA[<h1>Orbit v0.3 更新报告</h1>
-<blockquote>
-<p><strong>版本定位：</strong> 在 v0.2 的多 Widget Runtime 之上，补齐实例生命周期、显式销毁、可访问性恢复入口和最低自动化门禁，为将来的稳定 API 打基础。</p>
-</blockquote>
-<h2 id="发布范围">发布范围</h2>
-<p>v0.3.0 已以标签 <code>v0.3.0</code> 和 GitHub Release 发布，指向提交 <code>e61e983</code>；npm 包 <code>floating-widget-framework</code> 的 <code>latest</code> 也为 <code>0.3.0</code>。</p>
-<p>相对 <code>v0.2-baseline</code>，此次变更涉及 46 个文件，约新增 4,500 行、删除 416 行。改动覆盖 Runtime、Clock/Music Host、Launcher、构建校验、CI、性能说明、阶段设计记录与发行产物。</p>
-<h2 id="主要更新">主要更新</h2>
-<h3 id="1-生命周期成为正式契约">1. 生命周期成为正式契约</h3>
-<p>v0.3 引入 <code>LifecycleScope</code>，将事件、计时器、DOM、观察器等副作用登记为逆序、幂等、异常隔离的 cleanup 队列。Runtime 同时明确了两个不同操作：</p>
-<table>
-<thead>
-<tr>
-<th>操作</th>
-<th>语义</th>
-<th>适用场景</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>setVisible(id, false)</code></td>
-<td>隐藏，不释放已创建实例和资源</td>
-<td>用户在 Launcher 中暂时关闭组件</td>
-</tr>
-<tr>
-<td><code>destroy(id)</code></td>
-<td>显式清理资源并移除实例</td>
-<td>页面卸载、重建、PJAX 或业务主动销毁</td>
-</tr>
-</tbody>
-</table>
-<p><code>Orbit.mount()</code> 也改为幂等：新的 <code>widgets</code> 配置只更新列出的组件，不会因某个 id 被省略而销毁已经挂载的实例。这避免了增量配置场景下的意外拆除。[4]</p>
-<h3 id="2-host-adapter-与-clock-试点">2. Host adapter 与 Clock 试点</h3>
-<p>Runtime 通过 Host adapter 获得 <code>start</code>、<code>getRoot</code>、<code>destroy</code> 和 <code>getVisibilityTargets</code>，核心层不再写死 Music/Clock 的业务 DOM。Clock 作为试点已覆盖事件解绑、计时器销毁、rAF 拖拽队列取消、DOM 删除和 destroy 后重新 mount；这是本次更新最可信的工程验证。[5]</p>
-<p>Clock 的拖拽更新经 <code>requestAnimationFrame</code> 合并，展开方向交由共享 <code>ExpandPolicy</code> 判断，也将高频视觉更新与可测试几何决策分开。</p>
-<h3 id="3-music-接入新边界">3. Music 接入新边界</h3>
-<p>Music Host 增加了模板集中创建、状态 class 的单一投影、<code>data-orbit-portal</code> 所有权、AudioEngine/MutationObserver/PJAX 监听清理以及显式 <code>destroyMusicPlayer()</code>。特别是 dock-list portal 只删除被本实例声明拥有的节点，降低了对页面其他内容的误伤风险。[6]</p>
-<h3 id="4-launcher-的可访问性和移动端恢复">4. Launcher 的可访问性和移动端恢复</h3>
-<p>Launcher 现在会在打开时聚焦标题或第一个控件、在关闭时恢复触发点焦点，并处理 Tab 循环与 Escape 关闭。若粗指针设备上全部 Widget 被隐藏，<code>launcherFallback: 'ghost'</code> 会显示一个独立、不可拖拽且不入列表的恢复按钮，避免用户失去重新打开管理器的路径。</p>
-<h2 id="验证与质量信号">验证与质量信号</h2>
-<p>本版本新增 LifecycleScope、WidgetRegistry、ExpandPolicy 的单元测试。实际执行结果如下：</p>
-<table>
-<thead>
-<tr>
-<th>校验项</th>
-<th>实测结果</th>
-<th>覆盖范围</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td><code>npm run build</code></td>
-<td>通过</td>
-<td>三个浏览器 IIFE 产物生成</td>
-</tr>
-<tr>
-<td><code>npm run test:unit</code></td>
-<td>14 项通过</td>
-<td>生命周期、注册契约、展开几何</td>
-</tr>
-<tr>
-<td><code>npm run test:normalize</code></td>
-<td>12 项 smoke 检查通过</td>
-<td>状态归一化规则</td>
-</tr>
-<tr>
-<td><code>npm run check:dist</code></td>
-<td>通过</td>
-<td>发行文件存在性与体积检查</td>
-</tr>
-<tr>
-<td><code>npm run ci</code></td>
-<td>通过</td>
-<td>build、unit、dist 校验</td>
-</tr>
-<tr>
-<td>GitHub Actions</td>
-<td>v0.3 发布提交成功</td>
-<td>Node 20 环境下的基础门禁</td>
-</tr>
-</tbody>
-</table>
-<p>构建后工作树保持干净，且 <code>dist/</code> 与 <code>site/dist/</code> 的三个 JS 产物 SHA-256 一致，说明源码、npm 分发物和站点演示分发物在本次发布时没有漂移。</p>
-<h2 id="兼容性与使用影响">兼容性与使用影响</h2>
-<p>v0.3 仍支持 v0.2 的 <code>registerHost</code> 方式，并保留单 Widget 与多 Widget IIFE 交付形态。使用者需要理解的新行为是：<strong>隐藏不等于销毁</strong>；若页面框架会卸载或重建宿主环境，应调用 <code>Orbit.destroy(id)</code>，而不是仅从 <code>ORBIT.widgets</code> 配置中移除它。</p>
-<h2 id="已知限制与建议">已知限制与建议</h2>
-<ol>
-<li>
-<p><strong>Music Host 仍过于集中。</strong> 其约 1,566 行，仍混合歌单、音频、DOM、布局、手势、持久化和 PJAX。下一阶段宜拆分 Playlist、Audio、Template/Portal 和 Interaction 边界。</p>
-</li>
-<li>
-<p><strong>CI 少跑了一层。</strong> 工作流执行 <code>test:unit</code>，但未调用完整的 <code>npm test</code>，因此当前没有自动跑 <code>test:normalize</code>。应将 CI 改为完整测试命令，并补充浏览器级的 <code>destroy → remount</code>、portal 清理和移动端长按回归。</p>
-</li>
-<li>
-<p><strong>迁移文档需补齐。</strong> Release 说明指向 <code>docs/MIGRATION-v0.3.md</code>，但标签中不存在该文件。应提供实际迁移指南，解释 destroy/visible 的语义变化。</p>
-</li>
-<li>
-<p><strong>包入口需更明确。</strong> <code>main</code> 当前指向会自启动的浏览器 IIFE；如果要支持 npm import，应增加 ESM/CJS 入口，否则需在文档中明确其浏览器脚本定位。</p>
-</li>
-</ol>
-]]></content>
-      <categories>
-        <category>开发</category>
-        <category>更新</category>
-      </categories>
-      <tags>
-        <tag>开发</tag>
-        <tag>编程</tag>
-        <tag>更新</tag>
-      </tags>
-  </entry>
-  <entry>
-    <title>对周围事的看法</title>
-    <url>/2026/05/16/%E4%B8%80%E4%BA%9B%E5%B0%8F%E7%9A%84%E7%9C%8B%E6%B3%95/</url>
-    <content><![CDATA[<h2 id="理论：自律的逆天性">理论：自律的逆天性</h2>
-<p>此理论并非指你在这方面不可能自律，而是说一个人如果一方面自律，则它几乎是必然的要去在另一方面不自律，因为他心中的情绪，欲望需要发泄，除非说是他在自律之中可以发泄，但这很难</p>
-<h2 id="现状及原因">现状及原因</h2>
-<h3 id="现状">现状</h3>
-<p>事实上，我一直感觉我与周围的人格格不入，周围的人的人品、道德规范、思想、思考方式与内容都显得不像是一个正常的学生，正常的人的行为。周围的人也是满口脏话，黄话，真的不知道到底是在想什么。</p>
-<p>风气越来越差，尤其是低龄的孩子也开始了用脏话，疾病，用他人的痛苦来逞口舌之快，来填补自己内心的空缺，排解自己的情绪。而手机逐渐走向低龄化，这与现状有很大关系</p>
-<p>这个社会的道德水平也在不断下降，暴力行为逐渐增多</p>
-<p>在生活中，我会看到我们周围的人在捉弄，在欺负一些生理有缺陷的人</p>
-<h3 id="原因">原因</h3>
-<p>对于网络与手机，我们需要在玩耍中间找到平衡点，因为网络的确是鱼龙混杂，甚至现在的网络几乎被低质，恶俗，冷漠，不良价值观所占据，周围的人满口脏话，黄话，与网络，与人的欲望是有很大关系的，根据自律的逆天性，我们需要有一个出口发来发泄，而现在的人难以找到发泄的渠道，只得向外通过辱骂，低质的内容来产生廉价的快乐，无法向内求所。</p>
-<p>而风气越来越差，低龄的孩子用脏话，疾病，用他人的痛苦来骂人的原因，我思来想去，最终觉得还是离不开欲望与网络，网络使社会的联系速度加快，但同时也让不良的价值观，精神，道德与说话方式快速传播，而欲望则允许人们在一个词被平台禁用之后又继续需源源不断地使用更加隐晦，更加令人难以想象的词语来骂人，他们会为了口舌之快，挖空心思地去寻找更为生僻的，承载着他人痛苦的词语去骂人，他们不会想到人们的痛苦，只会发泄自己情绪，于是便形成了恶性循环，而小孩的善恶观念有几乎为零，他们便会学区这些词语来骂人，最终社会的风气也逐渐变坏，在这个过程中，孩子事实上是受害者。</p>
-<p>现在的校园问题还有一个原因，就是权力分配不合理，或者说权威。正常而言应该是由老师去管教约束学生，但现在老师的能力——或者说权力变小（因为盲目的关注孩子的感受），学生权力变大（家长的撑腰，维护，胡搅蛮缠），这边导致了老师管不住学生，风气日益下降的原因</p>
-<p>其实客观来说，这是必然的，根据热力学第二定律，一个封闭系统中的物体终将从有序趋向于无序，我们只能通过外部的力量来矫正内部，但是我们与外部又共同属于一个更高维度的封闭系统，所以趋于无序是必然的。（好像有一些牵强）</p>
-<p>每当我看到有人被欺凌时，我就感到十分的痛心，我理解了欺凌者渴望的权力与高贵，更同情被欺凌者的无辜。欺凌者所渴望的本质其实还是欲望，他们渴望优越感，期望通过打压，欺凌他人的方式来突显出自身的高大，这种情感是我所理解却不提倡的</p>
-<p>在我心中，这个社会是从小孩开始烂的，我之前也提到了善恶观念弱等等等等，但同时，还有一个现实的问题，他们会长大，然后接替这个社会的治理，我简直是无法想象社会将变成怎样（也可能是我太悲观）</p>
-<h2 id="见解">见解</h2>
-<p>在我的心目中，真正高大的人从不会是张扬者，他们往往会使不起眼的那个，但是他们的高大正是体现在他们的和，他们的怜，他们的勇与他们的义，他们不会急于去表现自己，而是会默默的发展，去培养自己的花</p>
-<p>但是我们并不该因为社会的不断变坏而放弃改变，我们应该去尽自己的努力，尽量的延缓，减慢这个转变的速度</p>
-<h2 id="一些题外话">一些题外话</h2>
-<p>有一个说法，是人的一切行为都是为了利益，但是我认为不对，我认为是每个人的行为都可以从为了利益的角度来解读</p>
-<p>我有的时候在思考，什么时候才能达到人人平等，最终我得出的结论是，当总统（主席）像我们平常的工作，比如推销啊，教师啊之类的，所受到的待遇，尊敬（主要指对待的态度）一样时，我们的社会才可能平等</p>
-<p>我最喜欢的文言文是逍遥游，滕王阁序，阿房宫赋，琵琶行，这几首我都背过了，说来也怪，这些都是我的课外积累，但是在没有资料的情况下读的时候却可以理解她的意思，哪怕一句里有几个字无法准确翻译，但是我却能抓住它的神，理解他的情</p>
-<p>而我最喜欢的词人，则是李煜和晏几道，我在诗词的海洋，在古人的故事中沉醉，那种美，那种感觉是语言无法表达的，就像翻译古文，翻译出来往往却失了神，最典型的就是“大漠孤烟直，长河落日圆”虽用字质朴，却让人读完自然出现一幅边塞黄昏图</p>
-<p>我其实读的书也与现在的人格格不入，我读《小王子》《长安的荔枝》《乡土中国》，东野圭吾的《白夜行》《恶意》《嫌疑人X的献身》《解忧杂货店》，《白鹿原》《活着》《明朝那些事》，《寂静的春天》《王阳明全解》和《论语》及论语的解析，译注</p>
-<h2 id="写在最后">写在最后</h2>
-<p><s>这不过是一个初二生从小学到初中的胡思乱想的不完全集合罢了</s></p>
-]]></content>
-      <categories>
-        <category>杂谈</category>
-      </categories>
-      <tags>
-        <tag>见解与看法</tag>
-      </tags>
-  </entry>
-  <entry>
     <title>Orbit v0.4 方案：从高质量实现到可依赖的悬浮交互 Runtime</title>
     <url>/2026/08/17/2026-08-18-Orbit-v0.4-%E6%96%B9%E6%A1%88%EF%BC%9A%E4%BB%8E%E9%AB%98%E8%B4%A8%E9%87%8F%E5%AE%9E%E7%8E%B0%E5%88%B0%E5%8F%AF%E4%BE%9D%E8%B5%96%E7%9A%84%E6%82%AC%E6%B5%AE%E4%BA%A4%E4%BA%92-Runtime/</url>
     <content><![CDATA[<h1>Orbit v0.4 方案：从高质量实现到可依赖的悬浮交互 Runtime</h1>
@@ -1043,6 +789,260 @@
       </tags>
   </entry>
   <entry>
+    <title>Orbit-v0.2更新报告</title>
+    <url>/2026/08/15/Orbit-v0-2%E6%9B%B4%E6%96%B0%E6%8A%A5%E5%91%8A/</url>
+    <content><![CDATA[<h1>Orbit v0.2 更新报告</h1>
+<blockquote>
+<p><strong>版本定位：</strong> 从两个独立的悬浮组件成品，升级为拥有统一入口、统一管理面板和统一交互语言的多 Widget 浏览器 Runtime。</p>
+</blockquote>
+<h2 id="发布范围">发布范围</h2>
+<p>本报告以 <code>v0.1.1</code> 发布提交与后续冻结的 <code>v0.2-baseline</code> 为比较边界。仓库没有独立的 <code>v0.2.0</code> Git tag；变更记录将该系列标记为 <code>0.2.0-c</code>，而 <code>v0.2-baseline</code> 用作 v0.3 开发前的冻结快照。因此，本文以 <strong>v0.2 系列能力</strong> 而非某个单一 tag 作为汇报对象。</p>
+<table>
+<thead>
+<tr>
+<th>维度</th>
+<th>v0.1.x</th>
+<th>v0.2 系列</th>
+<th>对用户的意义</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>交付形态</td>
+<td>Music、Clock 可独立接入</td>
+<td>新增 <code>dist/orbit.js</code> 多组件入口</td>
+<td>页面只需选择一种集成方式即可获得统一管理</td>
+</tr>
+<tr>
+<td>组件管理</td>
+<td>无统一面板</td>
+<td>Launcher + <code>Orbit.mount/setVisible/list</code></td>
+<td>用户能集中显示或隐藏组件</td>
+</tr>
+<tr>
+<td>桌面操作</td>
+<td>单个组件的既有交互</td>
+<td>默认 <code>Alt+O</code> 打开管理面板</td>
+<td>可快速进入统一控制入口</td>
+</tr>
+<tr>
+<td>移动操作</td>
+<td>组件自身触控</td>
+<td>长按悬浮球打开 Launcher</td>
+<td>适配没有键盘的触控设备</td>
+</tr>
+<tr>
+<td>文档叙述</td>
+<td>FWF 预览与组件并列</td>
+<td>统一为 Orbit Runtime</td>
+<td>产品模型更清晰</td>
+</tr>
+</tbody>
+</table>
+<h2 id="主要更新">主要更新</h2>
+<h3 id="1-新增-orbit-runtime-与多-widget-发布物">1. 新增 Orbit Runtime 与多 Widget 发布物</h3>
+<p>v0.2 的决定性更新是新增 <code>src/core/Orbit.js</code>、<code>src/core/Launcher.js</code>、<code>src/entry-orbit.js</code> 以及浏览器产物 <code>dist/orbit.js</code>。原先的 Music 与 Clock 不再只作为孤立脚本存在，而可由 Runtime 注册、启动并在 Launcher 中展示。</p>
+<p>对静态站用户而言，推荐接入从“分别引用两个脚本”转变为：引入 Music 与 Clock 的 CSS、写入 <code>window.ORBIT</code> 配置，再引入一个 <code>orbit.js</code>。这降低了多组件接入成本，也为后续增加 Widget 留出了公共入口。</p>
+<h3 id="2-launcher：解决多组件可管理性">2. Launcher：解决多组件可管理性</h3>
+<p>Launcher 为桌面提供 <code>Alt+O</code> 快捷键，为移动端提供“长按球体”入口，并加入首次提示与桌面/移动端差异化脚注。其价值不在于弹出层外观，而在于解决了多组件出现后“谁负责统一管理”的产品问题。</p>
+<p>v0.2 同时补上了两项关键交互修复：一是 Music 的 <code>display:block !important</code> 场景仍可被隐藏；二是移动端长按松手顺序调整为先识别长按、再结束拖拽，从而避免长按被误判为普通点击。这些修复使 Launcher 的基本操作能在真实页面中成立。</p>
+<h3 id="3-交互与布局向共享语言收敛">3. 交互与布局向共享语言收敛</h3>
+<p>新增/调整的 Gesture、Layout、Music CSS 与 Clock Host，使左右吸附、展开方向和移动端卡片边界保持更一致。v0.2 的核心成果并非把所有业务逻辑彻底抽象，而是建立了一个跨 Widget 复用的交互起点：<strong>拖拽、吸附、展开、长按、管理入口</strong> 使用同一组规则。</p>
+<h2 id="验证与发布状态">验证与发布状态</h2>
+<p>v0.2 交付了 demo、<code>test-orbit.html</code>、浏览器 IIFE 产物和 API/配置文档；差异范围约为 40 个文件、11,790 行新增、934 行删除。它实现了多组件 Runtime 的主体能力，但该阶段尚无 v0.3 引入的单元测试、产物校验脚本和 GitHub Actions CI。因此，其质量信号主要来自文档化的阶段验收和手动浏览器测试，而非自动化门禁。</p>
+<h2 id="兼容性与使用影响">兼容性与使用影响</h2>
+<table>
+<thead>
+<tr>
+<th>场景</th>
+<th>建议</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>已使用 Music/Clock 单文件</td>
+<td>可继续使用独立包；不要与 <code>orbit.js</code> 同时引入</td>
+</tr>
+<tr>
+<td>新接入多组件页面</td>
+<td>使用 <code>dist/orbit.js</code>，并保留两份组件 CSS</td>
+</tr>
+<tr>
+<td>桌面用户</td>
+<td>默认使用 <code>Alt+O</code>，可通过 <code>ORBIT.launcherKey</code> 改写</td>
+</tr>
+<tr>
+<td>移动用户</td>
+<td>长按任意球体打开 Launcher；保持手势区域不被页面脚本抢占</td>
+</tr>
+</tbody>
+</table>
+<h2 id="风险与下一步">风险与下一步</h2>
+<p>v0.2 的限制主要是 Runtime 仍以“注册 Host + 直接操作 DOM”为主，隐藏、销毁、重挂载的语义没有充分分离；当 PJAX、动态卸载或多个 portal 出现时，资源生命周期容易变得模糊。Music 与 Clock 的复杂度也存在明显差距，未来不宜一次性大改二者。</p>
+<p>因此，最合理的下一步正是 v0.3 所采取的方向：先用 Clock 试点建立生命周期契约，再让 Music 接入 <code>destroy</code>、可见性目标和 portal 所有权，而不是在 v0.2 阶段继续堆叠视觉功能。</p>
+]]></content>
+      <categories>
+        <category>开发</category>
+        <category>更新</category>
+      </categories>
+      <tags>
+        <tag>开发</tag>
+        <tag>编程</tag>
+        <tag>更新</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>Orbit-v0.3更新报告</title>
+    <url>/2026/08/15/Orbit-v0-3%E6%9B%B4%E6%96%B0%E6%8A%A5%E5%91%8A/</url>
+    <content><![CDATA[<h1>Orbit v0.3 更新报告</h1>
+<blockquote>
+<p><strong>版本定位：</strong> 在 v0.2 的多 Widget Runtime 之上，补齐实例生命周期、显式销毁、可访问性恢复入口和最低自动化门禁，为将来的稳定 API 打基础。</p>
+</blockquote>
+<h2 id="发布范围">发布范围</h2>
+<p>v0.3.0 已以标签 <code>v0.3.0</code> 和 GitHub Release 发布，指向提交 <code>e61e983</code>；npm 包 <code>floating-widget-framework</code> 的 <code>latest</code> 也为 <code>0.3.0</code>。</p>
+<p>相对 <code>v0.2-baseline</code>，此次变更涉及 46 个文件，约新增 4,500 行、删除 416 行。改动覆盖 Runtime、Clock/Music Host、Launcher、构建校验、CI、性能说明、阶段设计记录与发行产物。</p>
+<h2 id="主要更新">主要更新</h2>
+<h3 id="1-生命周期成为正式契约">1. 生命周期成为正式契约</h3>
+<p>v0.3 引入 <code>LifecycleScope</code>，将事件、计时器、DOM、观察器等副作用登记为逆序、幂等、异常隔离的 cleanup 队列。Runtime 同时明确了两个不同操作：</p>
+<table>
+<thead>
+<tr>
+<th>操作</th>
+<th>语义</th>
+<th>适用场景</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>setVisible(id, false)</code></td>
+<td>隐藏，不释放已创建实例和资源</td>
+<td>用户在 Launcher 中暂时关闭组件</td>
+</tr>
+<tr>
+<td><code>destroy(id)</code></td>
+<td>显式清理资源并移除实例</td>
+<td>页面卸载、重建、PJAX 或业务主动销毁</td>
+</tr>
+</tbody>
+</table>
+<p><code>Orbit.mount()</code> 也改为幂等：新的 <code>widgets</code> 配置只更新列出的组件，不会因某个 id 被省略而销毁已经挂载的实例。这避免了增量配置场景下的意外拆除。[4]</p>
+<h3 id="2-host-adapter-与-clock-试点">2. Host adapter 与 Clock 试点</h3>
+<p>Runtime 通过 Host adapter 获得 <code>start</code>、<code>getRoot</code>、<code>destroy</code> 和 <code>getVisibilityTargets</code>，核心层不再写死 Music/Clock 的业务 DOM。Clock 作为试点已覆盖事件解绑、计时器销毁、rAF 拖拽队列取消、DOM 删除和 destroy 后重新 mount；这是本次更新最可信的工程验证。[5]</p>
+<p>Clock 的拖拽更新经 <code>requestAnimationFrame</code> 合并，展开方向交由共享 <code>ExpandPolicy</code> 判断，也将高频视觉更新与可测试几何决策分开。</p>
+<h3 id="3-music-接入新边界">3. Music 接入新边界</h3>
+<p>Music Host 增加了模板集中创建、状态 class 的单一投影、<code>data-orbit-portal</code> 所有权、AudioEngine/MutationObserver/PJAX 监听清理以及显式 <code>destroyMusicPlayer()</code>。特别是 dock-list portal 只删除被本实例声明拥有的节点，降低了对页面其他内容的误伤风险。[6]</p>
+<h3 id="4-launcher-的可访问性和移动端恢复">4. Launcher 的可访问性和移动端恢复</h3>
+<p>Launcher 现在会在打开时聚焦标题或第一个控件、在关闭时恢复触发点焦点，并处理 Tab 循环与 Escape 关闭。若粗指针设备上全部 Widget 被隐藏，<code>launcherFallback: 'ghost'</code> 会显示一个独立、不可拖拽且不入列表的恢复按钮，避免用户失去重新打开管理器的路径。</p>
+<h2 id="验证与质量信号">验证与质量信号</h2>
+<p>本版本新增 LifecycleScope、WidgetRegistry、ExpandPolicy 的单元测试。实际执行结果如下：</p>
+<table>
+<thead>
+<tr>
+<th>校验项</th>
+<th>实测结果</th>
+<th>覆盖范围</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>npm run build</code></td>
+<td>通过</td>
+<td>三个浏览器 IIFE 产物生成</td>
+</tr>
+<tr>
+<td><code>npm run test:unit</code></td>
+<td>14 项通过</td>
+<td>生命周期、注册契约、展开几何</td>
+</tr>
+<tr>
+<td><code>npm run test:normalize</code></td>
+<td>12 项 smoke 检查通过</td>
+<td>状态归一化规则</td>
+</tr>
+<tr>
+<td><code>npm run check:dist</code></td>
+<td>通过</td>
+<td>发行文件存在性与体积检查</td>
+</tr>
+<tr>
+<td><code>npm run ci</code></td>
+<td>通过</td>
+<td>build、unit、dist 校验</td>
+</tr>
+<tr>
+<td>GitHub Actions</td>
+<td>v0.3 发布提交成功</td>
+<td>Node 20 环境下的基础门禁</td>
+</tr>
+</tbody>
+</table>
+<p>构建后工作树保持干净，且 <code>dist/</code> 与 <code>site/dist/</code> 的三个 JS 产物 SHA-256 一致，说明源码、npm 分发物和站点演示分发物在本次发布时没有漂移。</p>
+<h2 id="兼容性与使用影响">兼容性与使用影响</h2>
+<p>v0.3 仍支持 v0.2 的 <code>registerHost</code> 方式，并保留单 Widget 与多 Widget IIFE 交付形态。使用者需要理解的新行为是：<strong>隐藏不等于销毁</strong>；若页面框架会卸载或重建宿主环境，应调用 <code>Orbit.destroy(id)</code>，而不是仅从 <code>ORBIT.widgets</code> 配置中移除它。</p>
+<h2 id="已知限制与建议">已知限制与建议</h2>
+<ol>
+<li>
+<p><strong>Music Host 仍过于集中。</strong> 其约 1,566 行，仍混合歌单、音频、DOM、布局、手势、持久化和 PJAX。下一阶段宜拆分 Playlist、Audio、Template/Portal 和 Interaction 边界。</p>
+</li>
+<li>
+<p><strong>CI 少跑了一层。</strong> 工作流执行 <code>test:unit</code>，但未调用完整的 <code>npm test</code>，因此当前没有自动跑 <code>test:normalize</code>。应将 CI 改为完整测试命令，并补充浏览器级的 <code>destroy → remount</code>、portal 清理和移动端长按回归。</p>
+</li>
+<li>
+<p><strong>迁移文档需补齐。</strong> Release 说明指向 <code>docs/MIGRATION-v0.3.md</code>，但标签中不存在该文件。应提供实际迁移指南，解释 destroy/visible 的语义变化。</p>
+</li>
+<li>
+<p><strong>包入口需更明确。</strong> <code>main</code> 当前指向会自启动的浏览器 IIFE；如果要支持 npm import，应增加 ESM/CJS 入口，否则需在文档中明确其浏览器脚本定位。</p>
+</li>
+</ol>
+]]></content>
+      <categories>
+        <category>开发</category>
+        <category>更新</category>
+      </categories>
+      <tags>
+        <tag>开发</tag>
+        <tag>编程</tag>
+        <tag>更新</tag>
+      </tags>
+  </entry>
+  <entry>
+    <title>对周围事的看法</title>
+    <url>/2026/05/16/%E4%B8%80%E4%BA%9B%E5%B0%8F%E7%9A%84%E7%9C%8B%E6%B3%95/</url>
+    <content><![CDATA[<h2 id="理论：自律的逆天性">理论：自律的逆天性</h2>
+<p>此理论并非指你在这方面不可能自律，而是说一个人如果一方面自律，则它几乎是必然的要去在另一方面不自律，因为他心中的情绪，欲望需要发泄，除非说是他在自律之中可以发泄，但这很难</p>
+<h2 id="现状及原因">现状及原因</h2>
+<h3 id="现状">现状</h3>
+<p>事实上，我一直感觉我与周围的人格格不入，周围的人的人品、道德规范、思想、思考方式与内容都显得不像是一个正常的学生，正常的人的行为。周围的人也是满口脏话，黄话，真的不知道到底是在想什么。</p>
+<p>风气越来越差，尤其是低龄的孩子也开始了用脏话，疾病，用他人的痛苦来逞口舌之快，来填补自己内心的空缺，排解自己的情绪。而手机逐渐走向低龄化，这与现状有很大关系</p>
+<p>这个社会的道德水平也在不断下降，暴力行为逐渐增多</p>
+<p>在生活中，我会看到我们周围的人在捉弄，在欺负一些生理有缺陷的人</p>
+<h3 id="原因">原因</h3>
+<p>对于网络与手机，我们需要在玩耍中间找到平衡点，因为网络的确是鱼龙混杂，甚至现在的网络几乎被低质，恶俗，冷漠，不良价值观所占据，周围的人满口脏话，黄话，与网络，与人的欲望是有很大关系的，根据自律的逆天性，我们需要有一个出口发来发泄，而现在的人难以找到发泄的渠道，只得向外通过辱骂，低质的内容来产生廉价的快乐，无法向内求所。</p>
+<p>而风气越来越差，低龄的孩子用脏话，疾病，用他人的痛苦来骂人的原因，我思来想去，最终觉得还是离不开欲望与网络，网络使社会的联系速度加快，但同时也让不良的价值观，精神，道德与说话方式快速传播，而欲望则允许人们在一个词被平台禁用之后又继续需源源不断地使用更加隐晦，更加令人难以想象的词语来骂人，他们会为了口舌之快，挖空心思地去寻找更为生僻的，承载着他人痛苦的词语去骂人，他们不会想到人们的痛苦，只会发泄自己情绪，于是便形成了恶性循环，而小孩的善恶观念有几乎为零，他们便会学区这些词语来骂人，最终社会的风气也逐渐变坏，在这个过程中，孩子事实上是受害者。</p>
+<p>现在的校园问题还有一个原因，就是权力分配不合理，或者说权威。正常而言应该是由老师去管教约束学生，但现在老师的能力——或者说权力变小（因为盲目的关注孩子的感受），学生权力变大（家长的撑腰，维护，胡搅蛮缠），这边导致了老师管不住学生，风气日益下降的原因</p>
+<p>其实客观来说，这是必然的，根据热力学第二定律，一个封闭系统中的物体终将从有序趋向于无序，我们只能通过外部的力量来矫正内部，但是我们与外部又共同属于一个更高维度的封闭系统，所以趋于无序是必然的。（好像有一些牵强）</p>
+<p>每当我看到有人被欺凌时，我就感到十分的痛心，我理解了欺凌者渴望的权力与高贵，更同情被欺凌者的无辜。欺凌者所渴望的本质其实还是欲望，他们渴望优越感，期望通过打压，欺凌他人的方式来突显出自身的高大，这种情感是我所理解却不提倡的</p>
+<p>在我心中，这个社会是从小孩开始烂的，我之前也提到了善恶观念弱等等等等，但同时，还有一个现实的问题，他们会长大，然后接替这个社会的治理，我简直是无法想象社会将变成怎样（也可能是我太悲观）</p>
+<h2 id="见解">见解</h2>
+<p>在我的心目中，真正高大的人从不会是张扬者，他们往往会使不起眼的那个，但是他们的高大正是体现在他们的和，他们的怜，他们的勇与他们的义，他们不会急于去表现自己，而是会默默的发展，去培养自己的花</p>
+<p>但是我们并不该因为社会的不断变坏而放弃改变，我们应该去尽自己的努力，尽量的延缓，减慢这个转变的速度</p>
+<h2 id="一些题外话">一些题外话</h2>
+<p>有一个说法，是人的一切行为都是为了利益，但是我认为不对，我认为是每个人的行为都可以从为了利益的角度来解读</p>
+<p>我有的时候在思考，什么时候才能达到人人平等，最终我得出的结论是，当总统（主席）像我们平常的工作，比如推销啊，教师啊之类的，所受到的待遇，尊敬（主要指对待的态度）一样时，我们的社会才可能平等</p>
+<p>我最喜欢的文言文是逍遥游，滕王阁序，阿房宫赋，琵琶行，这几首我都背过了，说来也怪，这些都是我的课外积累，但是在没有资料的情况下读的时候却可以理解她的意思，哪怕一句里有几个字无法准确翻译，但是我却能抓住它的神，理解他的情</p>
+<p>而我最喜欢的词人，则是李煜和晏几道，我在诗词的海洋，在古人的故事中沉醉，那种美，那种感觉是语言无法表达的，就像翻译古文，翻译出来往往却失了神，最典型的就是“大漠孤烟直，长河落日圆”虽用字质朴，却让人读完自然出现一幅边塞黄昏图</p>
+<p>我其实读的书也与现在的人格格不入，我读《小王子》《长安的荔枝》《乡土中国》，东野圭吾的《白夜行》《恶意》《嫌疑人X的献身》《解忧杂货店》，《白鹿原》《活着》《明朝那些事》，《寂静的春天》《王阳明全解》和《论语》及论语的解析，译注</p>
+<h2 id="写在最后">写在最后</h2>
+<p><s>这不过是一个初二生从小学到初中的胡思乱想的不完全集合罢了</s></p>
+]]></content>
+      <categories>
+        <category>杂谈</category>
+      </categories>
+      <tags>
+        <tag>见解与看法</tag>
+      </tags>
+  </entry>
+  <entry>
     <title>嘉豪说</title>
     <url>/2026/05/18/%E5%98%89%E8%B1%AA%E8%AF%B4/</url>
     <content><![CDATA[<h2 id="内容">内容</h2>
@@ -1068,12 +1068,12 @@
      data-hbe-format="4"
      data-wpm="密码错误，请重新输入"
      data-whm="密码错误，请重新输入"
-     data-salt="da065c4dd83a3500cfa32a5435a4dc8c019123d670b8327c58e0428cc30c3d10"
-     data-nonce="0ecdc9f5e48b237b32c7719b"
+     data-salt="3d922d74d5907ee828ed6c6d8d89a2e76a02519b3d1197a000b949c50d3ef278"
+     data-nonce="7d46d4ad3c5f940bacb78696"
      data-kdf-iterations="650000"
      data-auto-save="false">
   <script id="hbeData" type="hbeData">
-    2d5b4196c212d95d6506fd0b7b3314fa03ae7c37b56dff5a8c4979acf4be096b27e8ee642a81ff589b638ec7579dfd34018a923a6a8dbfffe6fef19b0673935f03d452f2fda37f3f840f02dc0a270b1bc8889344a92c4e982f803574c5095a7c897a4a115330c4e085d95d0feca4100a67299ff070588f30f52aa6921c2595b0ac07d54acfa6964b446c34cc2f5ef0c41079d12cc1c99158dcf9a395fc83923bd42621107eb28526ccb87f039f1b57c2707b750888b31ca37935b120066964b923e2420e95d7300b75cc2c9dafcc1781d4ce5017769e13653610ffaf53af93a69cea032a2d00df7f784a9600671d160e56079802d32ec4acbd8694c5d78931ea52a48d9cf5964e0eccadda6e585c638d30fcf9be5b3145fddb8ac4538995864375403216f29ccab3d9ec5173862dcf092c870cc1c92781235f7d1c539548deb1046a4a0219af687c66aa0c4cb61c9b72ed5609cd5de96ccf53917238ffa34572fe10a97b90a0e686284f9534877db9bb520094906d5752a1e68346801767357aabaf1dcb9c4c6163bef4e3e9a9cf0819ec4f85f95f8d53015f08cbcd1c8eb5826fb8ff5bb95f46fe87007f6d307350ce9f6cda71183097b1035ea4fad942f4acc069a120800aa8f00338c08abbbe3354b02e4fdc3fe66cbc2fab2539745121cd3634cc0dc14923c0f76748098f9b055f50b175931c46e8db2961135cc638327baad8e1c805667e6095f23a19621e1329365e08423e91f9490c3790ad2ea03ace555873f65b0cace39984a2813cf5bb8594bf8ac301539fecc461d1dc1440ecd55afb3b932e68854f9ffad71f5ae36566e689008abf9209d9adc6d313a62396fba67d60ba717736acb19ace35606d125ae1b3d2100da6a50169f66fb46268c6c4173baa206df9c72c59dc1e0c28eea33870262a92fdc87814a6c60883e2e8180be0c475df9978fd7dc37e94777661f9fbe3bfc9d07c8cc28bde8418b23e3e6933290f1baa601641a7f92d44cde61842b06cf0cc77bd275a1b321ede0ac7b93ec8814ff432d8a2ac63554200ce1028d785384fee4217bfa8df0492c21893bc61ea8e7ad9d5be50c2958062b57247b2dda99cf0178e7e3b3c47b681b2432de23d071f489cab01d3fb06392f1d09d57b70a292fb7acbaa2dc3ab185855594869dad91114b86acc578aa926e6b6443f45d7608b59babdc162b43a3786d377a02806132b9f957cb358576efaa8d46e37c5f17a9d2bd71a0071d041ce6c1bd4c3ef69a850a6b8c8f311f66beea62b03d657af4f93727965dcba59d8debda116b6df81eeccd77e85fefdee623014c1b7f7b629cdaf5340450fdac8c7913ac29e90ece86a85b52b03d8b811a9213a4c79911c34dbf9f2348e610e7e935f2e0832ebb471c11e96117eed07e3b02552200643727061e63b786c341bf139d1a6b41529c191377c032908063a4db73ae7b3e245d4b5d07c22e02633ab1a07ca92d07c22ace1e5f469b4ee1971a6d12a83c1394c4c6336cfc8be5950b0f9acf79b3d9923cab5b4b24fc7f70d643442bc827044baafc1a66bbb1ae89be515a6c7031fe5a2ea19e2ad24c21b341338d5bf4f2b95c6b0528a4d45632256030d15a6cee85347a31e0b1146c08a0b44ee84addd58bca4d5b0b2df576d58d968f69e95e4d6420f66fc92e2534e2aacbf4a0bd5d0a731c0cb62724ff1e61552ee78ad8a652d714415e70f9b3dba62ae1171c887ae3c89c923cacdfe1a82b566c69029bed7578e7b18726f02ab072236b774af4e68baaa9da91aee0e5e24a5c92a21bdf2cbac72fb776c46c78c23f10cb61c0eb0feab46380da7e19903fae5598cd1f5114449807986c2e1a0fb567244915da333a6d28041b5d044f4543a8310b1cb7d5df62d63670d3755a35bc6fb45c412b0303a21cb7062ca0df5542eb1fe35546396b950e73e5eac3435b6e419deec3efbf452af860338189fa1845bc26c1396ed826b584fdd5cef54f0ef1b772ebfef5dbbfa38f689888cd7360240aef967d8fd42b10af3966dd05fa99f3ac9a4ae0f3be0c2a0c0e0edcec44b1a95d5359058901d1cbccf5760ce390e456e3d8b5d6dd7e45a67732550df7a85ea57e95bccc113f3e4d43d42942ad4571305dac396183075ff6658def59d45a373a27aa4db05e813379442cd12a7ee72a9cf61bc58b4bc2b076de7dc6fe5a45ea50b4a434619ccea57ad29bc0857fc81f7cb25cc78b109471a5f7f5d35c0dddf40e40529134bdacc1f848ec0a80c26d442bfd717e5c0e22847e076d8e16234613ceace2197bd8ca4cf0a7c40f0c4f32319d1eb6356d19d6286b215b28aec100a3c5e5f0d7489c0c838c1278f811a307d479140b350771d81a883f825266e647c36b40a5654fee6365e5d13a037a702872771e5abe25fa1698adf2d1307dd8564151c2b7e30994ec13fe91f971cf8e6e6648cf3fc507f427ece87b1a5b1bfe1b589a238b47734761aa41553a26aaf13f8492aaa1012252dafb2d0f5d1acb4e2eeeddc78da2e656769baf7c14e327875a7dcef46cb7b528ea4a008aee8368104b603dfcff668247c1a8b56bf994f6e2e974a5e42696730eec617cf54ecc2e4d9a52ff69f
+    383fbed9fdcddebe8c0380a3437b4f49f8778fc13cb0578256cec5c1f1a9b9d7a074eebf2e28ee8302ca5aa996df82fe4c8bbcebacdebbc889304d40bfd921a579d65aec0e2dbdbd1797cec7c8a5262b00cf0e79469f09793f068812684ee85edcf1eb8a8a8a45f505972cf01d583aed9620d05c2583c18555a505caea82074d7a39d7a8790795e60c64659498aa347c58f069a4cc1b2c72b66751ed77963f68fb11155446f208471a81bfdfba1335f40440068f41e95f4bce39afca304db09ec8abe7b61120ea8ec0f7acd55bd19630bba0b31bb11d282e89959977f1e2a14f4f224aedc3be4eb706f3a610c0148955bf84cf550cf5f87935608d4cd49bc33a9913d28597afc9fb1956c74c3582f7435a21f1dcbf2b6b6633d7169e4766ac63ccbb87f628d0a810afbdfe0b3086b2b752709bfb5949c09adb79a4af3b9dca7caa5b2784c396633467f64b99f566cb5986620f91c80a59ddb7b3641ee1702593992f57925ba5924d42c3e00a0cbad38fd36fadd0058d91ec1442d7a2f8c44143e2186d394f9a350e3f8d0f6aa31297b814ade1c18036cf9e748b37f5aeebf8b21935935112818cb74139cb84f13b82a229b90b00cd60589a8bd8c2d1480f1a1e3112d2ce1fefb0a114aa315cbd868ecfa6b097108c779a272c9d2880491aec975679d921701143728b5f670a01992f995aab5292b809795d2cf6ee31126049214d9654934075d54a5d4b81a7f486690a621de2ba07c5f454c85fe5d1bac0dd6e70bf017dba2572ff033dd2384fca2413a69ef9db1bcf839316c1cdc9a4dcab5d85ba284139385327c05985d192bd75773202e0db531087f325c8470c794e5f1619d448c1757e8fa9fd24e4fed55a4c3533975601d52af7ec00926159ee9b93fffdb04986df4087e03a43c29a8e8be4a7e21dc387f72483caacb405e8ded8fcb492940679759b2875db22bccc24c745cda2e360319a4c2920ac7d94e54b8082fd515635aaf86adec830b359ab393d2a49a54f7a1f844ba694d6a86f23edc4ba6545169d7cf19b73bbff590a40bc85113cc28c761b241cf2eb10284ce1637e6804fa11dfd55e2d128b17d56fe9efc887db697dc05106607782e6f7e696843a9e89abcb32df6699aa673b92a890ead037f81a51d9d8719cade3bee7d7ac81356c3b55b39377af4e24147000ff7a5fe6a18c24d13358407f2df6fd376abd5328fc0a1292cd9d38cd331a67450721701ed97a04432c6085bce339854be615f30b493e24b318cfeacd38e2baf6164b54a469a312e05b509afd1435edb96f79f4e7875f818fd0f8f2395778f12f475c0a08bac855a550abcb2a3d576f6b210d84937623c581e9fb83dc597d0a261ccfdeb16af2f448132375bc8fa02a0b118cfaded068adca22a6e60f7bc479285d591b79ceab799ed8d8887c71f8c03e6488a24022ca840b6008035ea999277cda5513fac3b37ad4791b0bc48367ca7abf3caf835cc9021b230d42a42974af62988076734745979e683fcc5d9ebc44b18abc54f7a79523a3bee355269364709d3d319ef049147b8c2840da6c350b9a8e26b08285d0ad45cede86f4dd7a46b71cd39f476276180663f465c3fa97fda72167f0e1c125922ed57daeab9c47f73c7ea7233a3a3f12f52a19ecb891dffa5a0e347a101a1b430a76e1a7babd5c795b6029e1fceb5627aac5977d7adc23df909ef88ef2fc087df5fadd9bf90078aa2857eb38ac5dd8f08e0818a78b08d77a1f800f596893587fc20fba205032f1119359459df3e6d96e7d865a08403adb037790e5fdc790e6be95d6b85548087a58c7084e2263329886a06f90ff94ea3109bf0d8c09f8e4a8bb65f7a3a8002f57148386fde6971f18717e9f80e34aacb382ee1891fdf5617d90e74822e7f07ddfa6d61134288fb3fc1d424df5f8be5e390bac4bf8c49b43654dbe13efe6f45ec9bc925ffed4b80554c92916586789dca3e881012e486cb87d33a560882a270266f794e96c459e7720d4fa75162b8f40df58e33aaa1bce416185001b9e4c3f19735dd7938bac0ab27c4cf4aaab6310c665294434b65a605b3bd2983457ef6d2c2df1f0b5c97a3a89bd62308b9bfe913ce77413937be3c2d99f981484ade3e11c03f9e6672a904b0eaa63e4507a127172379fe8a7cf523dcd8dde1c4a00aacd64bf38a3585aaedce08678100702fcc9a736d46d9ce626af30b74b433c8e91bbabb6a0ec48373c388c0ee1eac2b9da4ec83102f90bd6e985b770ba003a0e988770206f0a4502a4d803567217ce293814108ea18af80a1e6f461b72e2244e98b40b548aadf2344db7025cf5775edfed31bb0023bab6ffd4fe935e8fd54c225994080a5574b19f9445c7ab29cfdda622b63825d49232e69cf7d0b2db24f7114dd1585b5288d639b0396e56934bbf42d19fd5a58c0190ac202064c323b6a796e8178f59e07ce2d945ec381a7a4cf04d849d2ba8db32c0e7ba6124e407aa01b3497cff8c462a1d100742569356298e878db7fe791d055062bd82fe9488f4ec18bcd3ac560b278bb6a7d61395476cd9a9cf6f5e085c92e4177f4e175bc4e9f81fb2ef9a58e8e7e9143f49b4c695238b216e
   </script>
   <div class="hbe hbe-content">
     <form id="hbeForm" class="hbe hbe-form" onsubmit="return false">

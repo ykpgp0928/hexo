@@ -2,7 +2,8 @@
 let weatherInfo = "正在获取天气...";
 let lastMinute = -1;
 let isRefreshing = false; // 用于手动点击的UI锁
-let isFetchingAPI = false; // ✨ 新增：用于底层网络请求的全局防抖锁
+let isFetchingAPI = false; // 用于底层网络请求的全局防抖锁
+let clockTimer = null;    // ✨ 保存定时器，方便清除
 
 // --- 配置区 ---
 const AMAP_KEY = "43a8a1d787b396a55f0123b8d414c89d";
@@ -32,7 +33,6 @@ function getWeatherIcon(weatherText) {
     return "🌈";
 }
 
-// 3. 获取天气 (核心请求逻辑)
 // 3. 获取天气 (增加超时阻断与请求锁)
 async function fetchWeather() {
     // 拦截 1：未配置 Key
@@ -56,12 +56,12 @@ async function fetchWeather() {
 
     isFetchingAPI = true;
 
-    // ⏳ 新增：创建超时控制器 (设定 5 秒生死线)
+    // ⏳ 创建超时控制器 (设定 5 秒生死线)
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), 5000);
 
     try {
-        // 第一步：获取定位 (把 controller.signal 传给 fetch)
+        // 第一步：获取定位
         const ipRes = await fetch(`https://restapi.amap.com/v3/ip?key=${AMAP_KEY}`, { signal: controller.signal });
         const ipData = await ipRes.json();
 
@@ -83,7 +83,6 @@ async function fetchWeather() {
             }));
         }
     } catch (error) {
-        // ✨ 新增：精准捕获超时异常
         if (error.name === 'AbortError') {
             console.warn("请求高德天气超时 (超过5秒)");
         } else {
@@ -94,14 +93,14 @@ async function fetchWeather() {
         const oldCache = localStorage.getItem(CACHE_KEY);
         weatherInfo = oldCache ? JSON.parse(oldCache).info : "暂时无法获取天气";
     } finally {
-        clearTimeout(timeoutId); // 🧹 极其重要：请求完成(无论成功失败)必须清空定时器，防止内存泄漏
-        isFetchingAPI = false;   // 🔓 释放请求锁
+        clearTimeout(timeoutId);
+        isFetchingAPI = false;
     }
 }
 
 // 4. 手动触发刷新功能 (暴露给全局以供 onclick 调用)
 window.forceRefreshWeather = async function() {
-    if (isRefreshing) return; // 防止狂点
+    if (isRefreshing) return;
     isRefreshing = true;
 
     const weatherEl = document.getElementById("clk-weather");
@@ -110,18 +109,17 @@ window.forceRefreshWeather = async function() {
         weatherEl.style.opacity = "0.7";
     }
 
-    localStorage.removeItem(CACHE_KEY); // 清空旧缓存
-    await fetchWeather(); // 重新拉取天气
+    localStorage.removeItem(CACHE_KEY);
+    await fetchWeather();
 
     isRefreshing = false;
     if (weatherEl) {
         weatherEl.style.opacity = "1";
-        weatherEl.innerText = weatherInfo; // 恢复正常文本
+        weatherEl.innerText = weatherInfo;
     }
 }
 
 // 5. 更新时钟 UI
-// 5. 更新时钟 UI (修复冒号不对齐问题版)
 function updateClock() {
     const clock = document.getElementById("custom-clock");
     if (!clock) return;
@@ -154,7 +152,7 @@ function updateClock() {
         weatherEl.innerText = weatherInfo;
     }
 
-    // C. 实时更新今日进度条 (平滑动画)
+    // C. 实时更新今日进度条
     const todayPassedSeconds = hour * 3600 + minute * 60 + second;
     const progressPercent = (todayPassedSeconds / 86400) * 100;
     const progressEl = document.getElementById("clk-progress");
@@ -187,6 +185,36 @@ function updateClock() {
     }
 }
 
-// 启动
-fetchWeather().then(() => updateClock());
-setInterval(updateClock, 1000);
+// ========== ✨ PJAX 适配核心 ==========
+
+// 清理定时器（防止多次切换后定时器叠加）
+function destroyClock() {
+    if (clockTimer) {
+        clearInterval(clockTimer);
+        clockTimer = null;
+    }
+    lastMinute = -1; // 重置，方便下次重新渲染
+}
+
+// 初始化时钟
+function initClock() {
+    destroyClock(); // 先清理旧的
+
+    // 如果当前页面没有时钟容器，直接返回
+    if (!document.getElementById("custom-clock")) return;
+
+    fetchWeather().then(() => {
+        updateClock();
+        clockTimer = setInterval(updateClock, 1000);
+    });
+}
+
+// 首次加载
+initClock();
+
+// 监听 PJAX 完成事件（Butterfly / 主流主题通用）
+document.addEventListener("pjax:complete", initClock);
+document.addEventListener("pjax:success", initClock); // 兼容部分主题
+
+// 部分主题使用的其他事件（可选，保险）
+document.addEventListener("DOMContentLoaded", initClock); // 正常情况其实不需要，但保险
