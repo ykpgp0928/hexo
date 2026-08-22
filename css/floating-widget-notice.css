@@ -1,0 +1,13 @@
+/*
+ * Orbit Notice Widget styles (M3).
+ * Card look lives inline (see NoticeWidget.js); this file only carries
+ * optional extras a theme might want to restyle via its own CSS.
+ */
+.orbit-notice {
+  /* inline-styled; keep as a stable selector for theme overrides */
+}
+@media (prefers-reduced-motion: reduce) {
+  .orbit-notice {
+    transition: none !important;
+  }
+}
